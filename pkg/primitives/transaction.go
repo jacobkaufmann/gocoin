@@ -1,23 +1,23 @@
 package primitives
 
-import "github.com/jacobkaufmann/gocoin/pkg/script"
+import (
+	"github.com/jacobkaufmann/gocoin/pkg/crypto"
+
+	"github.com/jacobkaufmann/gocoin/pkg/script"
+)
 
 // A Transaction represents a bitcoin transaction
 type Transaction struct {
 	Metadata TransactionMetadata
-	Inputs   []TransactionInput
-	Outputs  []TransactionOutput
+	Inputs   []*TransactionInput
+	Outputs  []*TransactionOutput
 }
 
-// A TxID is an identifier used to identify a particular Transaction
-// The sha256d of the Transaction
-type TxID [32]byte
-
-// TransactionMetadata holds metadata related to the Transaction
+// TransactionMetadata holds metadata related to the Transaction.
 type TransactionMetadata struct {
 	// The hash of the entire Transaction
 	// Serves as the the unique identifier for the Transaction
-	Hash TxID
+	TxID crypto.Hash
 
 	// Transaction version number
 	Version uint32
@@ -36,7 +36,7 @@ type TransactionMetadata struct {
 	Size uint32
 }
 
-// A TransactionInput is an input to a Transaction
+// A TransactionInput is an input to a Transaction.
 type TransactionInput struct {
 	// Previous TransactionOutpoint being spent
 	PreviousOutput TransactionOutpoint
@@ -52,7 +52,7 @@ type TransactionInput struct {
 	Sequence uint32
 }
 
-// A TransactionOutput is an output of a Transaction
+// A TransactionOutput is an output of a Transaction.
 type TransactionOutput struct {
 	// The number of satoshis to spend
 	// One satoshi is 10^-8 of a bitcoin
@@ -67,10 +67,10 @@ type TransactionOutput struct {
 }
 
 // A TransactionOutpoint contains information to refer to a specific
-// TransactionOutput
+// TransactionOutput.
 type TransactionOutpoint struct {
 	// The identifier for the Transaction holding the TransactionOutput
-	Hash TxID
+	Hash crypto.Hash
 
 	// The index of the TransactionOutput in the Transaction referenced by Hash
 	Index uint32

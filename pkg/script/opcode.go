@@ -2,8 +2,8 @@ package script
 
 import (
 	"bytes"
-	"crypto"
-	"crypto/sha256"
+
+	"github.com/jacobkaufmann/gocoin/pkg/crypto"
 )
 
 // An opCode represents an opcode in the Bitcoin scripting language
@@ -12,10 +12,6 @@ type opCode int
 const (
 	// OpDup duplicates the top item on the stack.
 	OpDup opCode = iota
-
-	// OpCheckSig determines whether an input signature is valid for
-	// the input public key and the current transaction.
-	// OpCheckSig
 
 	// OpHash160 performs two hashes using SHA256 followed by RIPEMD-160.
 	OpHash160
@@ -30,10 +26,6 @@ const (
 
 	// OpEqualVerify runs OpEqual and then OpVerify in sequence.
 	OpEqualVerify
-
-	// OpCheckMultisig determines whether some number of signatures on the
-	// transaction are valid for the corresponding public keys.
-	// OpCheckMultisig
 )
 
 // Execute the operations specified by the opcode.
@@ -60,9 +52,7 @@ func (op opCode) executeOp(s *Stack) error {
 
 		// Perform SHA256 hash followed by RIPEMD-160 and push result
 		// onto the stack
-		sha256 := sha256.Sum256(data)
-		ripemd160 := crypto.RIPEMD160.New().Sum([]byte(sha256[:]))
-		hash := ripemd160[:]
+		hash := crypto.Hash160(data)
 		s.Push(hash)
 	case OpEqual:
 		// Attempt to pop top two items from the stack

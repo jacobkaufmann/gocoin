@@ -1,6 +1,6 @@
 package script
 
-// A Script is an executable series of Bitcoin scripting language instructions.
+// A Script is a sequence of Bitcoin scripting language instructions.
 type Script struct {
 	DataStack    Stack
 	Instructions []Instruction

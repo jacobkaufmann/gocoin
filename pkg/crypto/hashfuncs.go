@@ -27,7 +27,7 @@ func DoubleSHA256B(b []byte) []byte {
 }
 
 // DoubleSHA256H performs the SHA-256 hashing algorithm twice sequentially and
-// returns a Hash.
+// returns the corresponding Hash.
 func DoubleSHA256H(b []byte) Hash {
 	return SHA256H(SHA256B(b))
 }

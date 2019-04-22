@@ -4,14 +4,11 @@ import "errors"
 
 // A Stack holds a collection of data from DataInstruction.
 type Stack struct {
-	Items []Data
+	Items [][]byte
 }
 
-// Data represents the data from a DataInstruction.
-type Data []byte
-
 // Push pushes data onto the top of the Stack.
-func (s Stack) Push(d Data) {
+func (s Stack) Push(d []byte) {
 	s.Items = append(s.Items, d)
 }
 

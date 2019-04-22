@@ -10,7 +10,7 @@ type Instruction interface {
 
 // A DataInstruction is a Bitcoin scripting language data instruction.
 type DataInstruction struct {
-	data  Data
+	data  []byte
 	stack *Stack
 }
 
@@ -20,7 +20,7 @@ func (i *DataInstruction) Execute() error {
 	return nil
 }
 
-// An OpCodeInstruction is Bitcoin scripting language opcode instruction.
+// An OpCodeInstruction is a Bitcoin scripting language opcode instruction.
 type OpCodeInstruction struct {
 	op    opCode
 	stack *Stack
