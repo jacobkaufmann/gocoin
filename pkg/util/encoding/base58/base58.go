@@ -1,8 +1,13 @@
 package base58
 
 import (
+	"errors"
 	"math/big"
 )
+
+// ErrInvalidCharacter indicates that a base 58 string has an invalid
+// base 58 character.
+var ErrInvalidCharacter = errors.New("invalid base 58 character")
 
 // Fields for big integer math.
 var bigRadix = big.NewInt(58)
@@ -42,7 +47,7 @@ func Encode(b []byte) string {
 
 // Decode decodes a Base58 string into a destination
 // byte slice.
-func Decode(src string) ([]byte, error) {
+func Decode(src string) (dst []byte, err error) {
 	mult := big.NewInt(1)
 	result := big.NewInt(0)
 
@@ -50,7 +55,7 @@ func Decode(src string) ([]byte, error) {
 	for i := len(src) - 1; i >= 0; i-- {
 		ch := b58[src[i]]
 		if ch == 255 {
-			return nil, ErrInvalidFormat
+			return nil, ErrInvalidCharacter
 		}
 		tmp.SetInt64(int64(ch))
 		tmp.Mul(tmp, mult)
@@ -68,7 +73,7 @@ func Decode(src string) ([]byte, error) {
 		zeros++
 	}
 	l := len(tmpBytes) + zeros
-	dst := make([]byte, l)
+	dst = make([]byte, l)
 	copy(dst[zeros:], tmpBytes)
 	return dst, nil
 }
