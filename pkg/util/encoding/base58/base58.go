@@ -39,3 +39,36 @@ func Encode(b []byte) string {
 
 	return string(encoded)
 }
+
+// Decode decodes a Base58 string into a destination
+// byte slice.
+func Decode(src string) ([]byte, error) {
+	mult := big.NewInt(1)
+	result := big.NewInt(0)
+
+	tmp := new(big.Int)
+	for i := len(src) - 1; i >= 0; i-- {
+		ch := b58[src[i]]
+		if ch == 255 {
+			return nil, ErrInvalidFormat
+		}
+		tmp.SetInt64(int64(ch))
+		tmp.Mul(tmp, mult)
+		result.Add(result, tmp)
+		mult.Mul(mult, bigRadix)
+	}
+
+	tmpBytes := result.Bytes()
+
+	zeros := 0
+	for zeros < len(src) {
+		if src[zeros] != alphabetIdx0 {
+			break
+		}
+		zeros++
+	}
+	l := len(tmpBytes) + zeros
+	dst := make([]byte, l)
+	copy(dst[zeros:], tmpBytes)
+	return dst, nil
+}

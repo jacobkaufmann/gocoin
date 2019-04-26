@@ -3,7 +3,9 @@ package base58
 // alphabet is the base58 alphabet used by Bitcoin.
 const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
-// b58 is a map for translating from big-endian base256 to base58.
+const alphabetIdx0 = '1'
+
+// b58 is a map for translating from base256 (ASCII) to base58.
 var b58 = [256]byte{
 	255, 255, 255, 255, 255, 255, 255, 255,
 	255, 255, 255, 255, 255, 255, 255, 255,
