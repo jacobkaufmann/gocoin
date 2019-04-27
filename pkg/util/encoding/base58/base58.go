@@ -36,7 +36,7 @@ func Encode(b []byte) string {
 		encoded = append(encoded, alphabetIdx0)
 	}
 
-	// Reverse the string.
+	// Reverse the bytes.
 	l := len(encoded)
 	for i := 0; i < l/2; i++ {
 		encoded[i], encoded[l-1-i] = encoded[l-1-i], encoded[i]
