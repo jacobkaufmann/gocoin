@@ -3,6 +3,7 @@ package base58
 // alphabet is the base58 alphabet used by Bitcoin.
 const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
+// alphabetIdx0 is the representation of zero in base58.
 const alphabetIdx0 = '1'
 
 // b58 is a map for translating from base256 (ASCII) to base58.
