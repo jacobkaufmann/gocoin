@@ -6,6 +6,18 @@ import (
 	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 )
 
+// VersionPrefix represents a Base58Check version prefix.
+type VersionPrefix byte
+
+const (
+	// Address refers to a Bitcoin address.
+	Address VersionPrefix = 0
+	// P2SH refers to a Pay-to-Script-Hash address.
+	P2SH VersionPrefix = 5
+	// PrivateKeyWIF refers to a Private key WIF (Wallet Import Format).
+	PrivateKeyWIF VersionPrefix = 128
+)
+
 var (
 	// ErrCheckSum  indicates that the checksum of a check-encoded string
 	// does not verify against the checksum.
