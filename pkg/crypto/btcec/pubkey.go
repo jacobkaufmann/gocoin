@@ -12,6 +12,20 @@ type PublicKey struct {
 	compressed bool
 }
 
+// NewPublicKey returns the public key corresponding to a PrivateKey.
+func NewPublicKey(privKey *PrivateKey) *PublicKey {
+	pubKey := &PublicKey{
+		&privKey.PublicKey,
+		privKey.compressed,
+	}
+	return pubKey
+}
+
+// Compressed returns whether or not the PublicKey is compressed.
+func (k *PublicKey) Compressed() bool {
+	return k.compressed
+}
+
 // Hex returns the hex encoding of the PublicKey.
 func (k *PublicKey) Hex() string {
 	bigZero := big.NewInt(0)
