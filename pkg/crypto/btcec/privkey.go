@@ -5,6 +5,8 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/hex"
+
+	"github.com/jacobkaufmann/gocoin/pkg/util/encoding/base58"
 )
 
 // A PrivateKey represents a Bitcoin private key.
@@ -24,6 +26,11 @@ func NewPrivateKey(compressed bool) *PrivateKey {
 	return privKey
 }
 
+// Compressed returns whether or not the PrivateKey is compressed.
+func (k *PrivateKey) Compressed() bool {
+	return k.compressed
+}
+
 // Hex returns the hex encoding of the PrivateKey.
 func (k *PrivateKey) Hex() string {
 	h := hex.EncodeToString(k.D.Bytes())
@@ -31,4 +38,10 @@ func (k *PrivateKey) Hex() string {
 		h += "01"
 	}
 	return h
+}
+
+// WIF returns the WIF encoding of the PrivateKey.
+func (k *PrivateKey) WIF() string {
+	b := []byte(k.Hex())
+	return base58.EncodeCheck(b, byte(base58.PrivateKeyWIF))
 }
