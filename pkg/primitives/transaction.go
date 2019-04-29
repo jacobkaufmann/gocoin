@@ -1,7 +1,7 @@
 package primitives
 
 import (
-	"github.com/jacobkaufmann/gocoin/pkg/crypto"
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 
 	"github.com/jacobkaufmann/gocoin/pkg/script"
 )
@@ -17,7 +17,7 @@ type Transaction struct {
 type TransactionMetadata struct {
 	// The hash of the entire Transaction
 	// Serves as the the unique identifier for the Transaction
-	TxID crypto.Hash
+	TxID hashing.Hash
 
 	// Transaction version number
 	Version uint32
@@ -39,7 +39,7 @@ type TransactionMetadata struct {
 // A TransactionInput is an input to a Transaction.
 type TransactionInput struct {
 	// Previous TransactionOutpoint being spent
-	PreviousOutput TransactionOutpoint
+	PrevOutput TransactionOutpoint
 
 	// Number of bytes in ScriptSig
 	ScriptBytes uint16
@@ -70,7 +70,7 @@ type TransactionOutput struct {
 // TransactionOutput.
 type TransactionOutpoint struct {
 	// The identifier for the Transaction holding the TransactionOutput
-	Hash crypto.Hash
+	Hash hashing.Hash
 
 	// The index of the TransactionOutput in the Transaction referenced by Hash
 	Index uint32

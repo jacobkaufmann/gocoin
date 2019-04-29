@@ -1,11 +1,12 @@
 package primitives
 
 import (
-	"github.com/jacobkaufmann/gocoin/pkg/crypto"
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 )
 
 // A Block represents a block in the Bitcoin block chain
 type Block struct {
+	Size         uint32
 	Header       BlockHeader
 	Transactions []*Transaction
 }
@@ -17,10 +18,10 @@ type BlockHeader struct {
 	Version uint32
 
 	// The hash of the previous block's header.
-	PrevBlockHash crypto.Hash
+	PrevBlockHash hashing.Hash
 
 	// The hash of the merkle root.
-	MerkleRootHash crypto.Hash
+	MerkleRootHash hashing.Hash
 
 	// Unix epoch time when the miner started hashing the header
 	// (according to the miner).

@@ -3,7 +3,7 @@ package base58
 import (
 	"errors"
 
-	"github.com/jacobkaufmann/gocoin/pkg/crypto"
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 )
 
 var (
@@ -18,7 +18,7 @@ var (
 
 // checksum computes the 32-bit checksum for a byte slice.
 func checksum(b []byte) (check [4]byte) {
-	h := crypto.DoubleSHA256B(b)
+	h := hashing.DoubleSHA256B(b)
 	copy(check[:], h[:4])
 	return
 }

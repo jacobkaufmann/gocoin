@@ -3,7 +3,7 @@ package script
 import (
 	"bytes"
 
-	"github.com/jacobkaufmann/gocoin/pkg/crypto"
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 )
 
 // An opCode represents an opcode in the Bitcoin scripting language
@@ -52,7 +52,7 @@ func (op opCode) executeOp(s *Stack) error {
 
 		// Perform SHA256 hash followed by RIPEMD-160 and push result
 		// onto the stack
-		hash := crypto.Hash160(data)
+		hash := hashing.Hash160(data)
 		s.Push(hash)
 	case OpEqual:
 		// Attempt to pop top two items from the stack
