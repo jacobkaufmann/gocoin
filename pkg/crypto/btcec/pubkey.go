@@ -4,6 +4,10 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"math/big"
+
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
+
+	"github.com/jacobkaufmann/gocoin/pkg/util/encoding/base58"
 )
 
 // A PublicKey represents a Bitcoin public key.
@@ -24,6 +28,13 @@ func NewPublicKey(privKey *PrivateKey) *PublicKey {
 // Compressed returns whether or not the PublicKey is compressed.
 func (k *PublicKey) Compressed() bool {
 	return k.compressed
+}
+
+// Address returns the Bitcoin address for a public key.
+func (k *PublicKey) Address() string {
+	b := []byte(k.Hex())
+	h := hashing.Hash160(b)
+	return base58.EncodeCheck(h, byte(base58.Address))
 }
 
 // Hex returns the hex encoding of the PublicKey.
