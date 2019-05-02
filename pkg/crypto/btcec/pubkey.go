@@ -21,6 +21,8 @@ const (
 	pubkeyUncompressed    byte = 0x4
 )
 
+// isOdd returns whether a big.Int is odd.  It is a helper for determining
+// the appropriate prefix for a serialized public key.
 func isOdd(a *big.Int) bool {
 	return a.Bit(0) == 1
 }
@@ -35,8 +37,8 @@ func IsCompressedPubKey(pubKey []byte) bool {
 			pubKey[0]&^byte(0x1) == pubKeyCompressedOddY)
 }
 
-// Address returns the Bitcoin address for a public key.
-func Address(pubKey []byte) string {
+// AddressForPubKey returns the Bitcoin address for a public key.
+func AddressForPubKey(pubKey []byte) string {
 	h := hashing.Hash160(pubKey)
 	return base58.EncodeCheck(h, byte(base58.Address))
 }
@@ -49,9 +51,9 @@ func (p *PublicKey) ToECDSA() *ecdsa.PublicKey {
 	return (*ecdsa.PublicKey)(p)
 }
 
-// IsEqual compares this PublicKey instance to the one passed, returning true if
-// both PublicKeys are equivalent. A PublicKey is equivalent to another, if they
-// both have the same X and Y coordinate.
+// IsEqual compares this public key instance to the one passed, returning true
+// if both public keys are equivalent. A public key is equivalent to another,
+// if they both have the same X and Y coordinate.
 func (p *PublicKey) IsEqual(otherPubKey *PublicKey) bool {
 	return p.X.Cmp(otherPubKey.X) == 0 &&
 		p.Y.Cmp(otherPubKey.Y) == 0
