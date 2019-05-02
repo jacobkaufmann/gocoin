@@ -3,26 +3,26 @@ package blockchain
 import (
 	"math"
 
-	"github.com/jacobkaufmann/gocoin/pkg/crypto"
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 	"github.com/jacobkaufmann/gocoin/pkg/primitives"
 )
 
 // MerkleTree represents a Merkle Tree.  The Merkle Tree may be partial
 // or whole.
 type MerkleTree struct {
-	Nodes           []*crypto.Hash
+	Nodes           []*hashing.Hash
 	NumTransactions uint32
 }
 
 // HashMerkleNodes takes two hashes, treated as left and right tree nodes, and
 // returns the hash of their concatenation.
-func HashMerkleNodes(left *crypto.Hash, right *crypto.Hash) *crypto.Hash {
+func HashMerkleNodes(left *hashing.Hash, right *hashing.Hash) *hashing.Hash {
 	// Concatenate the left and right nodes.
 	var h [64]byte
 	copy(h[:len(left)], left[:])
 	copy(h[len(left):], right[:])
 
-	newHash := crypto.DoubleSHA256H(h[:])
+	newHash := hashing.DoubleSHA256H(h[:])
 	return &newHash
 }
 
@@ -44,13 +44,13 @@ func nextPowerOfTwo(n int) int {
 func BuildMerkleTree(transactions []primitives.Transaction) *MerkleTree {
 	nextPoT := nextPowerOfTwo(len(transactions))
 	arraySize := nextPoT*2 - 1
-	nodes := make([]*crypto.Hash, arraySize)
+	nodes := make([]*hashing.Hash, arraySize)
 
 	// Create the intial bottom layer of hashes and insert into array.
 	for i, tx := range transactions {
 		// Coinbase transaction
 		if i == 0 {
-			var coinbaseHash crypto.Hash
+			var coinbaseHash hashing.Hash
 			nodes[i] = &coinbaseHash
 		} else {
 			nodes[i] = &tx.Metadata.TxID
