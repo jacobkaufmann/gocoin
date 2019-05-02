@@ -4,44 +4,73 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"encoding/hex"
+	"math/big"
 
 	"github.com/jacobkaufmann/gocoin/pkg/util/encoding/base58"
 )
 
-// A PrivateKey represents a Bitcoin private key.
-type PrivateKey struct {
-	*ecdsa.PrivateKey
-	compressed bool
-}
+// A PrivateKey wraps an ecdsa.PrivateKey and represents a Bitcoin private key.
+type PrivateKey ecdsa.PrivateKey
 
 // NewPrivateKey generates a new private key for the elliptic curve.
-func NewPrivateKey(compressed bool) *PrivateKey {
-	k, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+func NewPrivateKey(curve elliptic.Curve) (*PrivateKey, error) {
+	k, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	privKey := &PrivateKey{k, compressed}
-	return privKey
+	return (*PrivateKey)(k), nil
 }
 
-// Compressed returns whether or not the PrivateKey is compressed.
-func (k *PrivateKey) Compressed() bool {
-	return k.compressed
-}
+// PrivKeyFromBytes returns a private and public key for `curve' based on the
+// private key passed as an argument as a byte slice.
+func PrivKeyFromBytes(curve elliptic.Curve, pk []byte) (*PrivateKey,
+	*PublicKey) {
+	x, y := curve.ScalarBaseMult(pk)
 
-// Hex returns the hex encoding of the PrivateKey.
-func (k *PrivateKey) Hex() string {
-	h := hex.EncodeToString(k.D.Bytes())
-	if k.compressed {
-		h += "01"
+	priv := &ecdsa.PrivateKey{
+		PublicKey: ecdsa.PublicKey{
+			Curve: curve,
+			X:     x,
+			Y:     y,
+		},
+		D: new(big.Int).SetBytes(pk),
 	}
-	return h
+
+	return (*PrivateKey)(priv), (*PublicKey)(&priv.PublicKey)
+}
+
+// PubKey returns the PublicKey corresponding to this private key.
+func (p *PrivateKey) PubKey() *PublicKey {
+	return (*PublicKey)(&p.PublicKey)
+}
+
+// Sign generates a signature for the provided hash using the private key.
+func (p *PrivateKey) Sign(hash []byte) (*Signature, error) {
+	r, s, err := ecdsa.Sign(rand.Reader, p.ToECDSA(), hash)
+	if err != nil {
+		return nil, err
+	}
+	return &Signature{r, s}, nil
+}
+
+// ToECDSA returns the private key as a *ecdsa.PrivateKey.
+func (p *PrivateKey) ToECDSA() *ecdsa.PrivateKey {
+	return (*ecdsa.PrivateKey)(p)
+}
+
+// PrivKeyBytesLen defines the length in bytes of a serialized private key.
+const PrivKeyBytesLen = 32
+
+// Serialize returns the private key number d as a big-endian binary-encoded
+// number, padded to a length of 32 bytes.
+func (p *PrivateKey) Serialize() []byte {
+	b := make([]byte, 0, PrivKeyBytesLen)
+	return paddedAppend(PrivKeyBytesLen, b, p.ToECDSA().D.Bytes())
 }
 
 // WIF returns the WIF encoding of the PrivateKey.
-func (k *PrivateKey) WIF() string {
-	b := []byte(k.Hex())
+func (p *PrivateKey) WIF() string {
+	b := p.Serialize()
 	return base58.EncodeCheck(b, byte(base58.PrivateKeyWIF))
 }
