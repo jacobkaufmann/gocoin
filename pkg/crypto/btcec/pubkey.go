@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
-	"github.com/jacobkaufmann/gocoin/pkg/util/encoding/base58"
 )
 
 // These constants define the lengths of serialized public keys.
@@ -38,9 +37,8 @@ func IsCompressedPubKey(pubKey []byte) bool {
 }
 
 // AddressForPubKey returns the Bitcoin address for a public key.
-func AddressForPubKey(pubKey []byte) string {
-	h := hashing.Hash160(pubKey)
-	return base58.EncodeCheck(h, byte(base58.Address))
+func AddressForPubKey(pubKey []byte) []byte {
+	return hashing.Hash160(pubKey)
 }
 
 // A PublicKey wraps an ecdsa.PublicKey represents a Bitcoin public key.
