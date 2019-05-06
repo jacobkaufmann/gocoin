@@ -12,13 +12,6 @@ const HashSize = 32
 // typically represents the double sha256 of data.
 type Hash [HashSize]byte
 
-// MaxHashStringSize is the maximum length of a Hash hash string.
-const MaxHashStringSize = HashSize * 2
-
-// ErrHashStrSize describes an error that indicates the caller specified a hash
-// string that has too many characters.
-var ErrHashStrSize = fmt.Errorf("max hash string length is %v bytes", MaxHashStringSize)
-
 // String returns the Hash as the hexadecimal string of the byte-reversed
 // hash.
 func (hash Hash) String() string {
@@ -28,16 +21,21 @@ func (hash Hash) String() string {
 	return hex.EncodeToString(hash[:])
 }
 
+// Bytes returns the hash as a byte slice.
+func (hash *Hash) Bytes() []byte {
+	return hash[:]
+}
+
 // SetBytes sets the bytes which represent the hash.  An error is returned if
 // the number of bytes passed in is not HashSize.
 func (hash *Hash) SetBytes(newHash []byte) error {
-	nhlen := len(newHash)
-	if nhlen != HashSize {
-		return fmt.Errorf("invalid hash length of %v, want %v", nhlen,
+	nlen := len(newHash)
+	if nlen != HashSize {
+		return fmt.Errorf("invalid hash length of %v, want %v", nlen,
 			HashSize)
 	}
-	copy(hash[:], newHash)
 
+	copy(hash[:], newHash)
 	return nil
 }
 
