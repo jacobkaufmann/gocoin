@@ -4,24 +4,24 @@ import "errors"
 
 // A Stack holds a collection of data from DataInstruction.
 type Stack struct {
-	Items [][]byte
+	items [][]byte
 }
 
 // Push pushes data onto the top of the Stack.
 func (s Stack) Push(d []byte) {
-	s.Items = append(s.Items, d)
+	s.items = append(s.items, d)
 }
 
 // Pop attempts to remove the top item from the Stack and
 // returns it if Stack is non-empty.
 // Otherwise, an error is returned.
 func (s Stack) Pop() ([]byte, error) {
-	size := len(s.Items)
+	size := len(s.items)
 	if size == 0 {
 		return nil, ErrPopFromEmptyStack
 	}
-	i := s.Items[size-1]
-	s.Items = s.Items[:size-1]
+	i := s.items[size-1]
+	s.items = s.items[:size-1]
 	return i, nil
 }
 
