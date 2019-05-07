@@ -3,10 +3,12 @@ package p2p
 // messageHeader represents a message header in the Bitcoin network protocol.
 type messageHeader struct {
 	magic    uint32
-	cmd      [12]byte
+	cmd      command
 	size     uint32
 	checksum uint32
 }
+
+type command [12]byte
 
 type messageType string
 
@@ -29,3 +31,9 @@ const (
 	reject      messageType = "reject"
 	sendHeaders messageType = "sendheaders"
 )
+
+func (t *messageType) cmd() command {
+	var cmd command
+	copy(cmd[:], string(*t))
+	return cmd
+}
