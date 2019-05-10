@@ -6,54 +6,54 @@ import (
 	"github.com/jacobkaufmann/gocoin/pkg/script"
 )
 
-// A Transaction represents a bitcoin transaction
-type Transaction struct {
-	Metadata TransactionMetadata
-	Inputs   []*TransactionInput
-	Outputs  []*TransactionOutput
+// A Tx represents a bitcoin transaction
+type Tx struct {
+	Metadata TxMetadata
+	Inputs   []*TxInput
+	Outputs  []*TxOutput
 }
 
-// TransactionMetadata holds metadata related to the Transaction.
-type TransactionMetadata struct {
-	// The hash of the entire Transaction
-	// Serves as the the unique identifier for the Transaction
+// TxMetadata holds metadata related to the transaction.
+type TxMetadata struct {
+	// The hash of the entire transaction
+	// Serves as the the unique identifier for the transaction
 	TxID hashing.Hash
 
 	// Transaction version number
 	Version uint32
 
-	// Number of inputs in the Transaction
+	// Number of inputs in the transaction
 	TxInputsCount uint32
 
-	// Number of outputs in the Transaction
+	// Number of outputs in the transaction
 	TxOutputsCount uint32
 
 	// A time (Unix epoch time) or block number which indicates the earliest time
-	// or earliest block when this Transaction may be added to the block chain
+	// or earliest block when this transaction may be added to the block chain
 	LockTime uint32
 
-	// The size of the Transaction
+	// The size of the transaction
 	Size uint32
 }
 
-// A TransactionInput is an input to a Transaction.
-type TransactionInput struct {
-	// Previous TransactionOutpoint being spent
-	PrevOutput TransactionOutpoint
+// A TxInput is an input to a transaction.
+type TxInput struct {
+	// Previous TxOutpoint being spent
+	PrevOutput TxOutpoint
 
 	// Number of bytes in ScriptSig
 	ScriptBytes uint16
 
 	// A Script which satisfies the conditions specified by the ScriptPubKey in
-	// PreviousOutput
+	// PrevOutput
 	ScriptSig script.Script
 
 	// Sequence number
 	Sequence uint32
 }
 
-// A TransactionOutput is an output of a Transaction.
-type TransactionOutput struct {
+// A TxOutput is an output of a transaction.
+type TxOutput struct {
 	// The number of satoshis to spend
 	// One satoshi is 10^-8 of a bitcoin
 	Value uint64
@@ -62,16 +62,16 @@ type TransactionOutput struct {
 	ScriptPubKeyBytes uint16
 
 	// A Script which defines conditions which must be satisfied to spend this
-	// TransactionOutput
+	// transaction output
 	ScriptPubKey script.Script
 }
 
-// A TransactionOutpoint contains information to refer to a specific
-// TransactionOutput.
-type TransactionOutpoint struct {
-	// The identifier for the Transaction holding the TransactionOutput
+// A TxOutpoint contains information to refer to a specific
+// transaction output.
+type TxOutpoint struct {
+	// The identifier for the transaction holding the transaction output
 	Hash hashing.Hash
 
-	// The index of the TransactionOutput in the Transaction referenced by Hash
+	// The index of the transaction output in the transaction referenced by Hash
 	Index uint32
 }

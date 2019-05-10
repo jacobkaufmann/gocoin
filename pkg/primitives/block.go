@@ -14,7 +14,7 @@ type Block struct {
 	Size            uint32
 	Header          BlockHeader
 	NumTransactions uint32
-	Transactions    []*Transaction
+	Transactions    []*Tx
 }
 
 // A BlockHeader contains metadata for a block and is hashed as part
