@@ -6,21 +6,21 @@ import (
 	"github.com/jacobkaufmann/gocoin/pkg/script"
 )
 
-// A Tx represents a bitcoin transaction
+// A Tx represents a Bitcoin transaction.
 type Tx struct {
 	Metadata TxMetadata
 	Inputs   []*TxInput
 	Outputs  []*TxOutput
 }
 
-// TxMetadata holds metadata related to the transaction.
+// TxMetadata holds metadata related to a transaction.
 type TxMetadata struct {
 	// The hash of the entire transaction
-	// Serves as the the unique identifier for the transaction
+	// Serves as the unique identifier for the transaction
 	TxID hashing.Hash
 
 	// Transaction version number
-	Version uint32
+	Version int32
 
 	// Number of inputs in the transaction
 	TxInputsCount uint32
