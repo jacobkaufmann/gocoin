@@ -11,6 +11,21 @@ type CompactSize uint64
 // littleEndian is a convenience variable for binary.littleEndian.
 var littleEndian = binary.LittleEndian
 
+// CompactSizeFromBytes parses a little endian ordered byte slice and returns
+// a CompactSize object.
+func CompactSizeFromBytes(b []byte) CompactSize {
+	switch prefix := b[0]; prefix {
+	case 0xFD:
+		return CompactSize(uint64(littleEndian.Uint16(b)))
+	case 0xFE:
+		return CompactSize(uint64(littleEndian.Uint32(b)))
+	case 0xFF:
+		return CompactSize(uint64(littleEndian.Uint64(b)))
+	default:
+		return CompactSize(uint64(uint8(b[0])))
+	}
+}
+
 // Bytes returns a variable-length byte slice containing a prefix identifier
 // and the integer encoded in little endian order.
 func (c CompactSize) Bytes() []byte {
