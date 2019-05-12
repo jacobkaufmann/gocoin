@@ -1,23 +1,24 @@
 package mining
 
 const (
-	// RewardHalvingInterval is the interval (in terms of blocks mined) for
-	// which the block reward is halved.
-	RewardHalvingInterval uint64 = 210000
+	// SubsidyHalvingInterval is the interval (in terms of blocks mined) for
+	// which the block subsidy is halved.
+	SubsidyHalvingInterval uint64 = 210000
 
-	// InitialRewardSatoshis is the initial block reward in satoshis.  It is
-	// used as a base value to calculate block rewards.
-	InitialRewardSatoshis uint64 = 5000000000
+	// InitialSubsidySatoshis is the initial block subsidy in satoshis.
+	InitialSubsidySatoshis uint64 = 50 * 1000000000
+
+	// TargetSize is the size in bytes of the block difficulty.
+	TargetSize = 32
 )
 
-// BlockReward calculates the block reward given the height of a block.
-func BlockReward(height uint64) uint64 {
-	halvings := height / RewardHalvingInterval
+// CalcBlockSubsidy calculates the block subsidy given the height of a block.
+func CalcBlockSubsidy(height uint64) uint64 {
+	halvings := height / SubsidyHalvingInterval
 	if halvings >= 64 {
 		return 0
 	}
 
-	reward := InitialRewardSatoshis
-	reward >>= halvings
-	return reward
+	sub := InitialSubsidySatoshis
+	return sub >> halvings
 }
