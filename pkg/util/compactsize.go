@@ -52,7 +52,7 @@ func (c CompactSize) Bytes() []byte {
 	}
 }
 
-// Value returns the uint64 value of the CompactSize.
-func (c CompactSize) Value() uint64 {
+// Uint64 returns the uint64 value of the CompactSize.
+func (c CompactSize) Uint64() uint64 {
 	return uint64(c)
 }
