@@ -9,12 +9,12 @@ import (
 // A Tx represents a bitcoin transaction.
 type Tx struct {
 	version    int32
-	txInCount  uint32
-	txOutCount uint32
+	txInCount  CompactSize
+	inputs     []*TxIn
+	txOutCount CompactSize
+	outputs    []*TxOut
 	lockTime   uint32
 	size       uint32
-	inputs     []*TxIn
-	outputs    []*TxOut
 }
 
 // A TxID is the unique identifier for a transaction.
@@ -26,7 +26,7 @@ type TxIn struct {
 	prevOutput TxOutPoint
 
 	// Number of bytes in ScriptSig
-	scriptBytes uint16
+	scriptBytes CompactSize
 
 	// A Script which satisfies the conditions specified by the ScriptPubKey in
 	// PrevOutput
@@ -43,7 +43,7 @@ type TxOut struct {
 	value uint64
 
 	// Number of bytes in PubKeyScript
-	scriptPubKeyBytes uint16
+	scriptPubKeyBytes CompactSize
 
 	// A Script which defines conditions which must be satisfied to spend this
 	// transaction output
