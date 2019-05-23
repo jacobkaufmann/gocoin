@@ -18,8 +18,17 @@ const (
 	// header.
 	MessageSizeSize = 4
 
-	// ChecksumSize is the size in bytes of a message checksum.
+	// ChecksumSize is the size in bytes of the message checksum in the message
+	// header.
 	ChecksumSize = 4
+
+	// MessageSizeOffset is the starting position of the messsage size in the
+	// message header.
+	MessageSizeOffset = MagicSize + CommandSize
+
+	// ChecksumOffset is the starting position of the message checksum in the
+	// message header.
+	ChecksumOffset = MessageSizeOffset + ChecksumSize
 
 	// MessageHeaderSize is the size in bytes of a message header.  It is the
 	// sum of the Bitcoin network (magic) 4 bytes + the command 12 bytes +
@@ -65,11 +74,12 @@ func (msgType MsgType) Bytes() [CommandSize]byte {
 
 // Serializable describes a Bitcoin serializable object.
 type Serializable interface {
-	// Serialize converts the object to bytes and writes it to a writer.
+	// Serialize converts an object into a byte format specified by the
+	// protocol version and writes those bytes to a writer.
 	Serialize(io.Writer, uint32) error
 
 	// Deserialize reads bytes from a reader and converts those bytes into
-	// an object.
+	// an object according to the specified protocol version.
 	Deserialize(io.Reader, uint32) error
 }
 
@@ -83,41 +93,41 @@ type Message interface {
 	// identifies the message type contained in the payload of a message.
 	Command() MsgType
 
-	// MaxPayloadLength returns the maximum length the message payload can be.
+	// MaxPayloadLength returns the maximum length in bytes the message
+	// payload can be.
 	MaxPayloadLength(uint32) uint32
 }
 
-// MessageHeader represents a message header in the Bitcoin network protocol.
-type MessageHeader struct {
+// messageHeader represents a message header in the bitcoin network protocol.
+type messageHeader struct {
 	magic    BitcoinNet
 	command  MsgType
 	size     uint32
 	checksum [ChecksumSize]byte
 }
 
-// Magic returns the magic value of the message the message header corresponds
-// to.
-//
-// The magic value indicates the messsage origin network.
-func (hdr *MessageHeader) Magic() BitcoinNet {
-	return hdr.magic
-}
+// readMessageHeader reads from r and returns a message header.
+func readMessageHeader(r io.Reader) (*messageHeader, error) {
+	buf := make([]byte, MessageHeaderSize)
+	if _, err := io.ReadFull(r, buf); err != nil {
+		return nil, err
+	}
 
-// Command returns the message type of the message the message header
-// corresponds to.
-func (hdr *MessageHeader) Command() MsgType {
-	return hdr.command
-}
+	magic := buf[:MagicSize]
+	cmd := buf[MagicSize:MessageSizeOffset]
+	size := buf[MessageSizeOffset:ChecksumOffset]
 
-// Size returns the size of the message the message header corresponds to.
-func (hdr *MessageHeader) Size() uint32 {
-	return hdr.Size()
-}
+	var check [ChecksumSize]byte
+	copy(check[:], buf[ChecksumOffset:])
+	reverseBytes(check[:])
 
-// Checksum returns the checksum of the message the message header corresponds
-// to.
-func (hdr *MessageHeader) Checksum() [ChecksumSize]byte {
-	return hdr.checksum
+	hdr := &messageHeader{
+		magic:    BitcoinNet(littleEndian.Uint32(magic)),
+		command:  MsgType(cmd),
+		size:     littleEndian.Uint32(size),
+		checksum: check,
+	}
+	return hdr, nil
 }
 
 // checksum returns the prefix (of length ChecksumSize) of the double SHA256
