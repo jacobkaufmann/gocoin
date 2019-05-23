@@ -6,10 +6,17 @@ import (
 )
 
 const (
+	// MagicSize is the size in bytes of the magic value in the message header.
+	MagicSize = 4
+
 	// CommandSize is the size in bytes of a command in the message header.
 	// Commands are padded by nulls (0x00) to pad out the size.
 	// Example: 'version\0\0\0\0\0'.
 	CommandSize = 12
+
+	// MessageSizeSize is the size in bytes of the size value in the message
+	// header.
+	MessageSizeSize = 4
 
 	// ChecksumSize is the size in bytes of a message checksum.
 	ChecksumSize = 4
@@ -17,7 +24,7 @@ const (
 	// MessageHeaderSize is the size in bytes of a message header.  It is the
 	// sum of the Bitcoin network (magic) 4 bytes + the command 12 bytes +
 	// the payload size 4 bytes + the checksum 4 bytes.
-	MessageHeaderSize = 24
+	MessageHeaderSize = MagicSize + CommandSize + MessageSizeSize + ChecksumSize
 )
 
 // MsgType defines a bitcoin protocol message type.
