@@ -6,13 +6,13 @@ import "io"
 // versions, a pong response is generated using a nonce included in the
 // corresponding ping.
 type MsgPong struct {
-	nonce uint64
+	Nonce uint64
 }
 
 // NewMsgPong returns a new pong message containing a specified nonce.
 func NewMsgPong(nonce uint64) *MsgPong {
 	return &MsgPong{
-		nonce: nonce,
+		Nonce: nonce,
 	}
 }
 
@@ -20,7 +20,7 @@ func NewMsgPong(nonce uint64) *MsgPong {
 // version pver and writes those bytes to w.
 func (msg *MsgPong) Serialize(w io.Writer, pver uint32) error {
 	buf := make([]byte, 8)
-	littleEndian.PutUint64(buf, msg.nonce)
+	littleEndian.PutUint64(buf, msg.Nonce)
 	_, err := w.Write(buf)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (msg *MsgPong) Deserialize(r io.Reader, pver uint32) error {
 	if _, err := io.ReadFull(r, buf); err != nil {
 		return err
 	}
-	msg.nonce = littleEndian.Uint64(buf)
+	msg.Nonce = littleEndian.Uint64(buf)
 	return nil
 }
 
@@ -47,9 +47,4 @@ func (msg *MsgPong) Command() MsgType {
 // MaxPayloadLength returns the maximum length in bytes of the pong message.
 func (msg *MsgPong) MaxPayloadLength(pver uint32) uint32 {
 	return 8
-}
-
-// Nonce returns the nonce of the pong message.
-func (msg *MsgPong) Nonce() uint64 {
-	return msg.nonce
 }

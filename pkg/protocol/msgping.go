@@ -4,13 +4,13 @@ import "io"
 
 // A MsgPing is sent to confirm the TCP/IP connection is still valid.
 type MsgPing struct {
-	nonce uint64
+	Nonce uint64
 }
 
 // NewMsgPing returns a new ping message containing a specified nonce.
 func NewMsgPing(nonce uint64) *MsgPing {
 	return &MsgPing{
-		nonce: nonce,
+		Nonce: nonce,
 	}
 }
 
@@ -18,7 +18,7 @@ func NewMsgPing(nonce uint64) *MsgPing {
 // version pver and writes those bytes to w.
 func (msg *MsgPing) Serialize(w io.Writer, pver uint32) error {
 	buf := make([]byte, 8)
-	littleEndian.PutUint64(buf, msg.nonce)
+	littleEndian.PutUint64(buf, msg.Nonce)
 	_, err := w.Write(buf)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func (msg *MsgPing) Deserialize(r io.Reader, pver uint32) error {
 	if _, err := io.ReadFull(r, buf); err != nil {
 		return err
 	}
-	msg.nonce = littleEndian.Uint64(buf)
+	msg.Nonce = littleEndian.Uint64(buf)
 	return nil
 }
 
@@ -45,9 +45,4 @@ func (msg *MsgPing) Command() MsgType {
 // MaxPayloadLength returns the maximum length in bytes of the ping message.
 func (msg *MsgPing) MaxPayloadLength(pver uint32) uint32 {
 	return 8
-}
-
-// Nonce returns the nonce of the ping message.
-func (msg *MsgPing) Nonce() uint64 {
-	return msg.nonce
 }
