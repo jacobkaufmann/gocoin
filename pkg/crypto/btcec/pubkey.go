@@ -3,8 +3,6 @@ package btcec
 import (
 	"crypto/ecdsa"
 	"math/big"
-
-	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 )
 
 // These constants define the lengths of serialized public keys.
@@ -34,11 +32,6 @@ func IsCompressedPubKey(pubKey []byte) bool {
 	return len(pubKey) == PubKeyBytesLenCompressed &&
 		(pubKey[0]&^byte(0x1) == pubkeyCompressedEvenY ||
 			pubKey[0]&^byte(0x1) == pubKeyCompressedOddY)
-}
-
-// AddressForPubKey returns the Bitcoin address for a public key.
-func AddressForPubKey(pubKey []byte) []byte {
-	return hashing.Hash160(pubKey)
 }
 
 // A PublicKey wraps an ecdsa.PublicKey represents a Bitcoin public key.
