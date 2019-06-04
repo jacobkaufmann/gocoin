@@ -1,15 +1,8 @@
-package util
-
-import (
-	"encoding/binary"
-)
+package protocol
 
 // CompactSize represents a variable-length integer to indicate the number
 // of bytes in a following piece of data.
 type CompactSize uint64
-
-// littleEndian is a convenience variable for binary.littleEndian.
-var littleEndian = binary.LittleEndian
 
 // CompactSizeFromBytes parses a little endian ordered byte slice and returns
 // a CompactSize object.
@@ -55,4 +48,18 @@ func (c CompactSize) Bytes() []byte {
 // Uint64 returns the uint64 value of the CompactSize.
 func (c CompactSize) Uint64() uint64 {
 	return uint64(c)
+}
+
+// Size returns the length of the byte representation of the CompactSize.
+func (c CompactSize) Size() uint32 {
+	switch v := uint64(c); {
+	case v < 0xFD:
+		return 1
+	case v <= 0xFFFF:
+		return 3
+	case v <= 0xFFFFFFFF:
+		return 5
+	default:
+		return 9
+	}
 }
