@@ -34,6 +34,10 @@ const (
 	// sum of the Bitcoin network (magic) 4 bytes + the command 12 bytes +
 	// the payload size 4 bytes + the checksum 4 bytes.
 	MessageHeaderSize = MagicSize + CommandSize + MessageSizeSize + ChecksumSize
+
+	// EmptyPayloadSize is a convenience variable for messages which have no
+	// payload.
+	EmptyPayloadSize = 0
 )
 
 // MsgType defines a bitcoin protocol message type.
@@ -93,9 +97,9 @@ type Message interface {
 	// identifies the message type contained in the payload of a message.
 	Command() MsgType
 
-	// MaxPayloadLength returns the maximum length in bytes the message
-	// payload can be.
-	MaxPayloadLength(uint32) uint32
+	// MaxPayloadSize returns the maximum size in bytes the message payload can
+	// be.
+	MaxPayloadSize(uint32) uint32
 }
 
 // messageHeader represents a message header in the bitcoin network protocol.
