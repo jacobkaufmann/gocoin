@@ -1,6 +1,6 @@
 package protocol
 
-// InvVect defines the structure of an inventory vector.  Inventory vectors
+// InvVect defines the structure of an inventory vector. Inventory vectors
 // are used for notifying other nodes about objects they have or data which is
 // being requested.
 type InvVect struct {
@@ -13,7 +13,10 @@ type InvType uint32
 
 // Bitcoin inventory types.
 const (
-	InvTypeError    InvType = 0
-	InvTypeMsgTx    InvType = 1
-	InvTypeMsgBlock InvType = 2
+	InvTypeUndefined InvType = 0
+	InvTypeMsgTx     InvType = 1
+	InvTypeMsgBlock  InvType = 2
 )
+
+// InvVectSize is the size in bytes of an inventory vector.
+const InvVectSize = HashSize + 4

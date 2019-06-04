@@ -1,6 +1,6 @@
 package protocol
 
-// MsgAddr is sent to provide information on known network nodes.
+// MsgAddr provides information on known network nodes.
 type MsgAddr struct {
 	Addrs []*NetAddress
 }
@@ -22,7 +22,7 @@ func (msg *MsgAddr) Command() MsgType {
 	return MsgTypeAddr
 }
 
-// MaxPayloadLength returns the maximum length in bytes of the address message.
-func (msg *MsgAddr) MaxPayloadLength(pver uint32) uint32 {
+// MaxPayloadSize returns the maximum size in bytes of the address message.
+func (msg *MsgAddr) MaxPayloadSize(pver uint32) uint32 {
 	return msg.Count().Size() + NetAddressSize*MaxAddrToSend
 }

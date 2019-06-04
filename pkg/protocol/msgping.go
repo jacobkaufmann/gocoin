@@ -2,7 +2,8 @@ package protocol
 
 import "io"
 
-// A MsgPing is sent to confirm the TCP/IP connection is still valid.
+// A MsgPing confirms the TCP/IP connection to the receiving peer is still
+// valid.
 type MsgPing struct {
 	Nonce uint64
 }
@@ -42,7 +43,7 @@ func (msg *MsgPing) Command() MsgType {
 	return MsgTypePing
 }
 
-// MaxPayloadLength returns the maximum length in bytes of the ping message.
-func (msg *MsgPing) MaxPayloadLength(pver uint32) uint32 {
+// MaxPayloadSize returns the maximum size in bytes of the ping message.
+func (msg *MsgPing) MaxPayloadSize(pver uint32) uint32 {
 	return 8
 }

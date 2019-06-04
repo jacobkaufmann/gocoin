@@ -2,9 +2,9 @@ package protocol
 
 import "io"
 
-// A MsgPong is sent in response to a ping message.  In modern protocol
-// versions, a pong response is generated using a nonce included in the
-// corresponding ping.
+// A MsgPong is a response to a ping message, indicating the ponging node is
+// still alive. In modern protocol versions, a pong response is generated using
+//  a nonce included in the corresponding ping.
 type MsgPong struct {
 	Nonce uint64
 }
@@ -44,7 +44,7 @@ func (msg *MsgPong) Command() MsgType {
 	return MsgTypePong
 }
 
-// MaxPayloadLength returns the maximum length in bytes of the pong message.
-func (msg *MsgPong) MaxPayloadLength(pver uint32) uint32 {
+// MaxPayloadSize returns the maximum size in bytes of the pong message.
+func (msg *MsgPong) MaxPayloadSize(pver uint32) uint32 {
 	return 8
 }
