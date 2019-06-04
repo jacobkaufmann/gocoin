@@ -19,8 +19,8 @@ const (
 	// message.
 	MaxInvSize = 50000
 
-	// MaxMsgLength is the maximum length of incoming protocol messages.
-	MaxMsgLength = 4 * 1000 * 1000
+	// MaxMsgSize is the maximum size in bytes of protocol messages.
+	MaxMsgSize = 0x02000000
 
 	// MaxAddrToSend is the maximum number of new addresses to accumulate
 	// before announcing.
