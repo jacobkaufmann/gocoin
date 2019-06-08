@@ -54,10 +54,10 @@ func (msg *MsgTx) Command() MsgType {
 
 // A TxIn is an input to a transaction.
 type TxIn struct {
-	PrevOutput     TxOutPoint
-	ScriptLockSize CompactSize
-	ScriptLock     []byte
-	Sequence       uint32
+	PrevOutput       TxOutPoint
+	ScriptUnlockSize CompactSize
+	ScriptUnlock     []byte
+	Sequence         uint32
 }
 
 // Size returns the size of the byte representation of a TxIn.
@@ -65,23 +65,23 @@ func (in *TxIn) Size() uint32 {
 	// TODO: find a more elegant/safe way to compute this without so many type
 	// conversions.
 	size := uint64(txOutPointSize)
-	size += uint64(in.ScriptLockSize.Size()) + in.ScriptLockSize.Uint64()
+	size += uint64(in.ScriptUnlockSize.Size()) + in.ScriptUnlockSize.Uint64()
 	size += 4
 	return uint32(size)
 }
 
 // A TxOut is an output of a transaction.
 type TxOut struct {
-	Value            uint64
-	ScriptUnlockSize CompactSize
-	ScriptUnlock     []byte
+	Value          uint64
+	ScriptLockSize CompactSize
+	ScriptLock     []byte
 }
 
 // Size returns the size of the byte representation of a TxOut.
 func (out *TxOut) Size() uint32 {
 	// TODO: find a more elegant/safe way to compute this without so many type
 	// conversions.
-	size := 8 + uint64(out.ScriptUnlockSize.Size()) + out.ScriptUnlockSize.Uint64()
+	size := 8 + uint64(out.ScriptLockSize.Size()) + out.ScriptLockSize.Uint64()
 	return uint32(size)
 }
 
