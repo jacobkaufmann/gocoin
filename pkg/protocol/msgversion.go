@@ -1,5 +1,7 @@
 package protocol
 
+import "time"
+
 // MsgVersion provides information about the transmitting node to the receiving
 // node upon creating an outgoing connection. Until both peers have exchanged
 // version messages, no other messages will be accepted.
@@ -9,7 +11,7 @@ package protocol
 type MsgVersion struct {
 	Version     uint32
 	Services    ServiceFlag
-	Timestamp   uint64
+	Timestamp   time.Time
 	AddrRecv    *NetAddress
 	AddrFrom    *NetAddress
 	Nonce       uint64
