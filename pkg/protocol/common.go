@@ -3,6 +3,7 @@ package protocol
 import (
 	"encoding/binary"
 	"io"
+	"net"
 	"time"
 )
 
@@ -204,6 +205,20 @@ func readElement(r io.Reader, element interface{}) error {
 		}
 		*e = int64(rv)
 		return nil
+	case *uint32Time:
+		rv, err := binarySerializer.Uint32(r, binary.LittleEndian)
+		if err != nil {
+			return err
+		}
+		*e = uint32Time(time.Unix(int64(rv), 0))
+		return nil
+	case *int64Time:
+		rv, err := binarySerializer.Uint64(r, binary.LittleEndian)
+		if err != nil {
+			return err
+		}
+		*e = int64Time(time.Unix(int64(rv), 0))
+		return nil
 	case *[ChecksumSize]byte:
 		_, err := io.ReadFull(r, e[:])
 		if err != nil {
@@ -211,6 +226,12 @@ func readElement(r io.Reader, element interface{}) error {
 		}
 		return nil
 	case *[CommandSize]byte:
+		_, err := io.ReadFull(r, e[:])
+		if err != nil {
+			return err
+		}
+		return nil
+	case *[net.IPv6len]byte:
 		_, err := io.ReadFull(r, e[:])
 		if err != nil {
 			return err
@@ -317,7 +338,13 @@ func writeElement(w io.Writer, element interface{}) error {
 			return err
 		}
 		return nil
-	case [HashSize]byte:
+	case [net.IPv6len]byte:
+		_, err := w.Write(e[:])
+		if err != nil {
+			return err
+		}
+		return nil
+	case *[HashSize]byte:
 		_, err := w.Write(e[:])
 		if err != nil {
 			return err
