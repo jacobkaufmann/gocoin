@@ -15,27 +15,14 @@ func NewMsgPing(nonce uint64) *MsgPing {
 	}
 }
 
-// Serialize converts the ping message into bytes as specified by the protocol
-// version pver and writes those bytes to w.
+// Serialize serializes msg and writes to w.
 func (msg *MsgPing) Serialize(w io.Writer, pver uint32) error {
-	buf := make([]byte, 8)
-	littleEndian.PutUint64(buf, msg.Nonce)
-	_, err := w.Write(buf)
-	if err != nil {
-		return err
-	}
-	return nil
+	return writeElement(w, msg.Nonce)
 }
 
-// Deserialize reads from r and converts those bytes into a ping message as
-// specified by the protocol version pver.
+// Deserialize deserializes data from r into msg.
 func (msg *MsgPing) Deserialize(r io.Reader, pver uint32) error {
-	buf := make([]byte, 8)
-	if _, err := io.ReadFull(r, buf); err != nil {
-		return err
-	}
-	msg.Nonce = littleEndian.Uint64(buf)
-	return nil
+	return readElement(r, &msg.Nonce)
 }
 
 // Command returns the message type of the ping message.
