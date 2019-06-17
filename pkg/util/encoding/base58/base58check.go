@@ -12,8 +12,10 @@ type VersionPrefix byte
 const (
 	// Address refers to a Bitcoin address.
 	Address VersionPrefix = 0
+
 	// P2SH refers to a Pay-to-Script-Hash address.
 	P2SH VersionPrefix = 5
+
 	// PrivateKeyWIF refers to a Private key WIF (Wallet Import Format).
 	PrivateKeyWIF VersionPrefix = 128
 )

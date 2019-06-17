@@ -9,7 +9,7 @@ import (
 // base 58 character.
 var ErrInvalidCharacter = errors.New("invalid base 58 character")
 
-// Fields for big integer math.
+// bigRadix and bigZero are convenience variables for big integer math.
 var bigRadix = big.NewInt(58)
 var bigZero = big.NewInt(0)
 
