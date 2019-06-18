@@ -1,13 +1,58 @@
 package protocol
 
+import "io"
+
 // CompactSize represents a variable-length integer to indicate the number
 // of bytes in a following piece of data.
 type CompactSize uint64
 
-// CompactSizeFromBytes parses a little endian ordered byte slice and returns
+var prefixes map[byte]uint32
+
+func init() {
+	prefixes[0xFD] = 3
+	prefixes[0xFE] = 5
+	prefixes[0xFF] = 9
+}
+
+// Serialize serializes c and writes to w.
+func (c CompactSize) Serialize(w io.Writer, pver uint32) error {
+	b := c.bytes(pver)
+	n, err := w.Write(b)
+	if err != nil {
+		return err
+	}
+	if uint32(n) != c.Size() {
+		return ErrInsufficientBytesWritten
+	}
+
+	return nil
+}
+
+// Deserialize deserializes data from r into c.
+func (c CompactSize) Deserialize(r io.Reader, pver uint32) error {
+	var prefix [1]byte
+	_, err := r.Read(prefix[:])
+	if err != nil {
+		return err
+	}
+
+	n, ok := prefixes[prefix[0]]
+	if !ok {
+		n = 1
+	}
+
+	b := make([]byte, n)
+	if n == 1 {
+		b[0] = prefix[0]
+	}
+	c = compactSizeFromBytes(prefix[0], b)
+	return nil
+}
+
+// compactSizeFromBytes parses a little endian ordered byte slice and returns
 // a CompactSize object.
-func CompactSizeFromBytes(b []byte) CompactSize {
-	switch prefix := b[0]; prefix {
+func compactSizeFromBytes(prefix byte, b []byte) CompactSize {
+	switch prefix {
 	case 0xFD:
 		return CompactSize(uint64(littleEndian.Uint16(b)))
 	case 0xFE:
@@ -19,9 +64,9 @@ func CompactSizeFromBytes(b []byte) CompactSize {
 	}
 }
 
-// Bytes returns a variable-length byte slice containing a prefix identifier
+// bytes returns a variable-length byte slice containing a prefix identifier
 // and the integer encoded in little endian order.
-func (c CompactSize) Bytes() []byte {
+func (c CompactSize) bytes(pver uint32) []byte {
 	switch v := uint64(c); {
 	case v < 0xFD:
 		b8 := make([]byte, 1, 1)
