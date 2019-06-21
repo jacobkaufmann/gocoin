@@ -1,5 +1,7 @@
 package protocol
 
+import "io"
+
 // A MsgInv transmits one or more inventory vectors of objects known to the
 // transmitting peer. It may be sent unsolicited or in response to a getblocks
 // message or mempool message.
@@ -15,6 +17,40 @@ func NewMsgInv(inv []*InvVect) *MsgInv {
 	}
 }
 
+// Serialize serializes msg and writes to w.
+func (msg *MsgInv) Serialize(w io.Writer, pver uint32) error {
+	count := CompactSize(uint64(len(msg.Inventory)))
+	err := count.Serialize(w, pver)
+
+	for _, v := range msg.Inventory {
+		err := writeElements(w, v.TypeID, v.Hash)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Deserialize deserializes data from r into msg.
+func (msg *MsgInv) Deserialize(r io.Reader, pver uint32) error {
+	var count CompactSize
+	count.Deserialize(r, pver)
+
+	n := count.Uint64()
+	for i := 0; i < n; i++ {
+		invVect := &InvVect{}
+		err := readElements(r, &invVect.TypeID, &invVect.Hash)
+		if err != nil {
+			return err
+		}
+
+		msg.Inventory = append(msg.Inventory, invVect)
+	}
+
+	return nil
+}
+
 // Count returns the number of inventory entries in the inv message.
 func (msg *MsgInv) Count() CompactSize {
 	return CompactSize(len(msg.Inventory))
@@ -22,7 +58,7 @@ func (msg *MsgInv) Count() CompactSize {
 
 // Command returns the message type of the inventory message.
 func (msg *MsgInv) Command() MsgType {
-	return MsgTypeGetAddr
+	return MsgTypeInv
 }
 
 // MaxPayloadSize returns the maximum size in bytes of the inventory
