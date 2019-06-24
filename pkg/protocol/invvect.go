@@ -8,6 +8,14 @@ type InvVect struct {
 	Hash   *[HashSize]byte
 }
 
+// NewInvVect returns a new inventory vector of a specified type and hash.
+func NewInvVect(typeID InvType, hash *[HashSize]byte) *InvVect {
+	return &InvVect{
+		TypeID: typeID,
+		Hash:   hash,
+	}
+}
+
 // InvType defines the object type linked to an inventory vector.
 type InvType uint32
 
