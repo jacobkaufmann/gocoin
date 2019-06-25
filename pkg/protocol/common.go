@@ -206,14 +206,14 @@ func readElement(r io.Reader, element interface{}) error {
 		*e = int64(rv)
 		return nil
 	case *uint32Time:
-		rv, err := binarySerializer.Uint32(r, binary.LittleEndian)
+		rv, err := binarySerializer.Uint32(r, littleEndian)
 		if err != nil {
 			return err
 		}
 		*e = uint32Time(time.Unix(int64(rv), 0))
 		return nil
 	case *int64Time:
-		rv, err := binarySerializer.Uint64(r, binary.LittleEndian)
+		rv, err := binarySerializer.Uint64(r, littleEndian)
 		if err != nil {
 			return err
 		}
