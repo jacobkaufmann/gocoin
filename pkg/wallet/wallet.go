@@ -1,11 +1,18 @@
 package wallet
 
-// A Wallet represents a Bitcoin wallet.
-type Wallet struct {
+import (
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/btcec"
+)
+
+// Wallet represents a full-service bitcoin wallet capable of distributing
+// keys and addresses and creating, signing, and broadcasting transactions.
+type Wallet interface {
+	Balance() uint64
+	AvailableBalance() uint64
+	PubKey() *btcec.PublicKey
 }
 
-// Balance returns the cumulative balance in satoshis for all
-// keys managed by the wallet.
-// func (w *Wallet) Balance() int64 {
-// TODO: Decide what implementation goes here and what goes in mempool pkg.
-// }
+// A BtcWallet represents a bitcoin wallet.
+type BtcWallet struct {
+	privKey *btcec.PrivateKey
+}
