@@ -1,110 +1,91 @@
+// Variable-length integer utilites for serialization and deserialization. A
+// CompactSize is the variable-length integer encoding used by the Bitcoin
+// protocol. A separate type is unnecessary because we only need the
+// variable-length representation at serialization time.
+
 package protocol
 
 import "io"
 
-// CompactSize represents a variable-length integer to indicate the number
-// of bytes in a following piece of data.
-type CompactSize uint64
+// emptyPrefix indicates the non-existance of a prefix when a CompactSize
+// may be represented by a single byte.
+const emptyPrefix = 0x00
 
-var prefixes map[byte]uint32
+// writeCompactSize encodes a uint64 into a CompactSize and writes the
+// representation to w.
+func writeCompactSize(w io.Writer, pver uint32, val uint64) error {
+	prefix, v := makeCompactSize(val, pver)
+	b := make([]byte, compactSizeSize(prefix, pver))
 
-func init() {
-	prefixes[0xFD] = 3
-	prefixes[0xFE] = 5
-	prefixes[0xFF] = 9
-}
+	if prefix == emptyPrefix {
+		b[0] = v.(uint8)
+	} else {
+		b[0] = prefix
+		switch cmpct := v.(type) {
+		case uint16:
+			littleEndian.PutUint16(b[1:], cmpct)
+		case uint32:
+			littleEndian.PutUint32(b[1:], cmpct)
+		case uint64:
+			littleEndian.PutUint64(b[1:], cmpct)
+		}
+	}
 
-// Serialize serializes c and writes to w.
-func (c CompactSize) Serialize(w io.Writer, pver uint32) error {
-	b := c.bytes(pver)
-	n, err := w.Write(b)
+	_, err := w.Write(b)
 	if err != nil {
 		return err
 	}
-	if uint32(n) != c.Size() {
-		return ErrInsufficientBytesWritten
-	}
-
 	return nil
 }
 
-// Deserialize deserializes data from r into c.
-func (c CompactSize) Deserialize(r io.Reader, pver uint32) error {
-	var prefix [1]byte
-	_, err := r.Read(prefix[:])
+// readCompactSize reads from r and decodes the CompactSize representation
+// into a uint64.
+func readCompactSize(r io.Reader, pver uint32, val *uint64) error {
+	prefix := make([]byte, 1)
+	_, err := r.Read(prefix)
 	if err != nil {
 		return err
 	}
 
-	n, ok := prefixes[prefix[0]]
-	if !ok {
-		n = 1
+	size := compactSizeSize(prefix[0], pver)
+	b := make([]byte, size)
+	_, err = r.Read(b)
+	if err != nil {
+		return err
 	}
 
-	b := make([]byte, n)
-	if n == 1 {
-		b[0] = prefix[0]
-	}
-	c = compactSizeFromBytes(prefix[0], b)
+	*val = littleEndian.Uint64(b)
 	return nil
 }
 
-// compactSizeFromBytes parses a little endian ordered byte slice and returns
-// a CompactSize object.
-func compactSizeFromBytes(prefix byte, b []byte) CompactSize {
+// makeCompactSize returns the CompactSize representation (prefix and value)
+// for a uint64. If the unsigned integer can be represented by a single byte,
+// the prefix is returned as a zero value.
+func makeCompactSize(val uint64, pver uint32) (prefix byte, v interface{}) {
+	switch {
+	case val < 0xFD:
+		return emptyPrefix, uint8(val)
+	case val <= 0xFFFF:
+		return 0xFD, uint16(val)
+	case val <= 0xFFFFFFFF:
+		return 0xFE, uint32(val)
+	default:
+		return 0xFF, uint64(val)
+	}
+}
+
+// compactSizeSize returns the size in bytes of the encoded unsigned integer
+// as specified by the prefix for the CompactSize. The method is used to
+// deduce the number of bytes to read after determining the prefix.
+func compactSizeSize(prefix byte, pver uint32) uint32 {
 	switch prefix {
 	case 0xFD:
-		return CompactSize(uint64(littleEndian.Uint16(b)))
-	case 0xFE:
-		return CompactSize(uint64(littleEndian.Uint32(b)))
-	case 0xFF:
-		return CompactSize(uint64(littleEndian.Uint64(b)))
-	default:
-		return CompactSize(uint64(uint8(b[0])))
-	}
-}
-
-// bytes returns a variable-length byte slice containing a prefix identifier
-// and the integer encoded in little endian order.
-func (c CompactSize) bytes(pver uint32) []byte {
-	switch v := uint64(c); {
-	case v < 0xFD:
-		b8 := make([]byte, 1, 1)
-		b8 = append(b8, uint8(v))
-		return b8
-	case v <= 0xFFFF:
-		b16 := make([]byte, 3, 3)
-		b16[0] = 0xFD
-		littleEndian.PutUint16(b16[1:], uint16(v))
-		return b16
-	case v <= 0xFFFFFFFF:
-		b32 := make([]byte, 5, 5)
-		b32[0] = 0xFE
-		littleEndian.PutUint32(b32[1:], uint32(v))
-		return b32
-	default:
-		b64 := make([]byte, 9, 9)
-		b64[0] = 0xFF
-		littleEndian.PutUint64(b64[1:], v)
-		return b64
-	}
-}
-
-// Uint64 returns the uint64 value of the CompactSize.
-func (c CompactSize) Uint64() uint64 {
-	return uint64(c)
-}
-
-// Size returns the length of the byte representation of the CompactSize.
-func (c CompactSize) Size() uint32 {
-	switch v := uint64(c); {
-	case v < 0xFD:
-		return 1
-	case v <= 0xFFFF:
 		return 3
-	case v <= 0xFFFFFFFF:
+	case 0xFE:
 		return 5
-	default:
+	case 0xFF:
 		return 9
+	default:
+		return 1
 	}
 }

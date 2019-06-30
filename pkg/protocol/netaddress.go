@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"io"
 	"net"
 	"time"
 )
@@ -16,3 +17,43 @@ type NetAddress struct {
 
 // NetAddressSize is the size in bytes of a network address.
 const NetAddressSize = 30
+
+// writeNetAddress encodes addr and writes the value to w.
+func writeNetAddress(w io.Writer, pver uint32, addr NetAddress,
+	time bool) error {
+	var err error
+
+	if time {
+		timestamp := uint32Time(addr.Timestamp)
+		err = writeElement(w, timestamp)
+		if err != nil {
+			return err
+		}
+	}
+
+	return writeElements(w, addr.Services, addr.IP.To16(), addr.Port)
+}
+
+// readNetAddress reads from r and decodes the value into addr.
+func readNetAddress(r io.Reader, pver uint32, addr *NetAddress,
+	time bool) error {
+	var err error
+
+	if time {
+		var timestamp uint32Time
+		err = readElements(r, &timestamp)
+		if err != nil {
+			return err
+		}
+		*addr.Timestamp = timestamp
+	}
+
+	var ip [net.IPv6len]byte
+	err = readElements(r, &addr.Services, &ip, &addr.Port)
+	if err != nil {
+		return err
+	}
+
+	*addr.IP = ip[:]
+	return nil
+}

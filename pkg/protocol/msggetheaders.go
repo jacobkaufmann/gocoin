@@ -29,8 +29,7 @@ func (msg *MsgGetHeaders) Serialize(w io.Writer, pver uint32) error {
 		return err
 	}
 
-	count := CompactSize(uint64(len(msg.HeaderHashes)))
-	err = count.Serialize(w, pver)
+	err = writeCompactSize(w, pver, msg.HashCount())
 	if err != nil {
 		return err
 	}
@@ -52,20 +51,18 @@ func (msg *MsgGetHeaders) Deserialize(r io.Reader, pver uint32) error {
 		return err
 	}
 
-	var count CompactSize
-	err = count.Deserialize(r, pver)
+	var n uint64
+	err = readCompactSize(r, pver, &n)
 	if err != nil {
 		return err
 	}
 
-	n := count.Uint64()
-	for i := 0; i < n; i++ {
+	for i := 0; i < int(n); i++ {
 		var hash [HashSize]byte
 		err = readElement(r, &hash)
 		if err != nil {
 			return err
 		}
-
 		msg.HeaderHashes = append(msg.HeaderHashes, hash)
 	}
 
@@ -74,8 +71,8 @@ func (msg *MsgGetHeaders) Deserialize(r io.Reader, pver uint32) error {
 
 // HashCount returns the number of block header hashes in the getheaders
 // message.
-func (msg *MsgGetHeaders) HashCount() CompactSize {
-	return CompactSize(len(msg.HeaderHashes))
+func (msg *MsgGetHeaders) HashCount() uint64 {
+	return len(msg.HeaderHashes)
 }
 
 // Command returns the message type of the getheaders message.

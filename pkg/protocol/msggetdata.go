@@ -19,8 +19,7 @@ func NewMsgGetData(inv []*InvVect) *MsgGetData {
 
 // Serialize serializes msg and writes to w.
 func (msg *MsgGetData) Serialize(w io.Writer, pver uint32) error {
-	count := CompactSize(uint64(len(msg.Inventory)))
-	err := count.Serialize(w, pver)
+	err := writeCompactSize(w, pver, msg.InvCount())
 	if err != nil {
 		return err
 	}
@@ -37,29 +36,27 @@ func (msg *MsgGetData) Serialize(w io.Writer, pver uint32) error {
 
 // Deserialize deserializes data from r into msg.
 func (msg *MsgGetData) Deserialize(r io.Reader, pver uint32) error {
-	var count CompactSize
-	err = count.Deserialize(r, pver)
+	var n uint64
+	err := readCompactSize(r, pver, &n)
 	if err != nil {
 		return err
 	}
 
-	n := count.Uint64()
-	for i := 0; i < n; i++ {
+	for i := 0; i < int(n); i++ {
 		invVect := &InvVect{}
 		err := readElements(r, &invVect.TypeID, &invVect.Hash)
 		if err != nil {
 			return err
 		}
-
 		msg.Inventory = append(msg.Inventory, invVect)
 	}
 
 	return nil
 }
 
-// Count returns the number of inventory entries in the getdata message.
-func (msg *MsgGetData) Count() CompactSize {
-	return CompactSize(len(msg.Inventory))
+// InvCount returns the number of inventory entries in the getdata message.
+func (msg *MsgGetData) InvCount() uint64 {
+	return len(msg.Inventory)
 }
 
 // Command returns the message type of the getdata message.

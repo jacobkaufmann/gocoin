@@ -28,8 +28,7 @@ func NewMsgHeaders(headers []*BlockHeader) *MsgHeaders {
 
 // Serialize serializes msg and writes to w.
 func (msg *MsgHeaders) Serialize(w io.Writer, pver uint32) error {
-	count := CompactSize(uint64(len(msg.Headers)))
-	err := count.Serialize(w, pver)
+	err := writeCompactSize(w, pver, msg.Count())
 	if err != nil {
 		return err
 	}
@@ -46,20 +45,18 @@ func (msg *MsgHeaders) Serialize(w io.Writer, pver uint32) error {
 
 // Deserialize deserializes data from r into msg.
 func (msg *MsgHeaders) Deserialize(r io.Reader, pver uint32) error {
-	var count CompactSize
-	err := count.Deserialize(r, pver)
+	var n uint64
+	err := readCompactSize(r, pver, &n)
 	if err != nil {
 		return err
 	}
 
-	n := count.Uint64()
-	for i := 0; i < n; i++ {
+	for i := 0; i < int(n); i++ {
 		hdr := &BlockHeader{}
 		err = hdr.Deserialize(r, pver)
 		if err != nil {
 			return err
 		}
-
 		msg.Headers = append(msg.Headers, hdr)
 	}
 
@@ -67,8 +64,8 @@ func (msg *MsgHeaders) Deserialize(r io.Reader, pver uint32) error {
 }
 
 // Count returns the number of headers in the headers message.
-func (msg *MsgHeaders) Count() CompactSize {
-	return CompactSize(len(msg.Headers))
+func (msg *MsgHeaders) Count() uint64 {
+	return len(msg.Headers)
 }
 
 // Command returns the message type of the headers message.
@@ -92,12 +89,12 @@ type BlockHeader struct {
 	Time           time.Time
 	NumBits        uint32
 	Nonce          uint32
-	TxCount        CompactSize
+	TxCount        uint64
 }
 
 // NewBlockHeader returns a new block header with the specified metadata.
 func NewBlockHeader(version uint32, prevBlock, merkleRoot *[HashSize]byte,
-	time, numBits, nonce uint32, txCount CompactSize) *BlockHeader {
+	time, numBits, nonce uint32, txCount uint64) *BlockHeader {
 
 	return &BlockHeader{
 		Version:        version,
@@ -112,12 +109,10 @@ func NewBlockHeader(version uint32, prevBlock, merkleRoot *[HashSize]byte,
 
 // Serialize serializes hdr and writes to w.
 func (hdr *BlockHeader) Serialize(w io.Writer, pver uint32) error {
-	err := writeElements(w, hdr.Version, hdr.PrevBlockHash, hdr.MerkleRootHash,
+	return writeElements(w, hdr.Version, hdr.PrevBlockHash, hdr.MerkleRootHash,
 		hdr.time.Unix(), hdr.NumBits, hdr.Nonce)
-	if err != nil {
-		return err
-	}
-	return hdr.TxCount.Serialize(w, pver)
+
+	return writeCompactSize(hdr.TxCount)
 }
 
 // Deserialize deserializes data from r into hdr.
@@ -129,6 +124,7 @@ func (hdr *BlockHeader) Deserialize(r io.Reader, pver uint32) error {
 		return err
 	}
 
-	hdr.Time = time.Unix(time, 0)
-	return hdr.TxCount.Deserialize(r, pver)
+	hdr.Time = time
+
+	return readCompactSize(r, pver, &hdr.TxCount)
 }
