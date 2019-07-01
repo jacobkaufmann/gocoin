@@ -1,44 +1,44 @@
+// Variable-length string utilites for serialization and deserialization. The
+// variable-length string (VarStr) encoding used by the Bitcoin contains a
+// CompactSize followed by the string itself. A separate type is unnecessary
+// because we only need the variable-length representation at serialization
+// time.
+
 package protocol
 
 import "io"
 
-// A VarStr is a variable length string.
-type VarStr string
-
-// Serialize serializes vstr and writes to w.
-func (vstr *VarStr) Serialize(w io.Writer, pver uint32) error {
-	b := []byte(vstr)
-
-	err := vstr.Size().Serialize(w, pver)
-	if err != nil {
-		return err
-	}
-	return writeElement(w, b)
-}
-
-// Deserialize deserializes data from r into vstr.
-func (vstr *VarStr) Deserialize(r io.Reader, pver uint32) error {
-	var strLen CompactSize
-	err := strLen.Deserialize(r, pver)
+// writeVarStr encodes s as a variable-length string and writes the value to w.
+func writeVarStr(w io.Writer, pver uint32, s string) error {
+	strLen := uint64(len(s))
+	err := writeCompactSize(w, pver, strLen)
 	if err != nil {
 		return err
 	}
 
-	var b [strLen]byte
-	err = readElement(r, b)
+	_, err = w.Write([]byte(s))
 	if err != nil {
 		return err
 	}
 
-	vstr = string(b)
 	return nil
 }
 
-// Size returns the length of the underlying string as a CompactSize.
-func (vstr VarStr) Size() CompactSize {
-	return CompactSize(len(vstr))
-}
+// readVarStr reads from r and decodes the variable-length string into a
+// string.
+func readVarStr(r io.Reader, pver uint32, s *string) error {
+	var strLen uint64
+	err := readCompactSize(r, pver, &strLen)
+	if err != nil {
+		return err
+	}
 
-func (vstr VarStr) String() string {
-	return string(vstr)
+	buf := make([]byte, strLen)
+	_, err = r.Read(buf)
+	if err != nil {
+		return err
+	}
+
+	*s = string(buf)
+	return nil
 }
