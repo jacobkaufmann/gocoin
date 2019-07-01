@@ -24,8 +24,8 @@ func (msg *MsgGetData) Serialize(w io.Writer, pver uint32) error {
 		return err
 	}
 
-	for _, v := range msg.Inventory {
-		err := writeElement(w, v.TypeID, v.Hash)
+	for _, inv := range msg.Inventory {
+		err := inv.Serialize(w, pver)
 		if err != nil {
 			return err
 		}
@@ -43,12 +43,12 @@ func (msg *MsgGetData) Deserialize(r io.Reader, pver uint32) error {
 	}
 
 	for i := 0; i < int(n); i++ {
-		invVect := &InvVect{}
-		err := readElements(r, &invVect.TypeID, &invVect.Hash)
+		inv := &InvVect{}
+		err = inv.Deserialize(r, pver)
 		if err != nil {
 			return err
 		}
-		msg.Inventory = append(msg.Inventory, invVect)
+		msg.Inventory = append(msg.Inventory, inv)
 	}
 
 	return nil
@@ -56,7 +56,7 @@ func (msg *MsgGetData) Deserialize(r io.Reader, pver uint32) error {
 
 // InvCount returns the number of inventory entries in the getdata message.
 func (msg *MsgGetData) InvCount() uint64 {
-	return len(msg.Inventory)
+	return uint64(len(msg.Inventory))
 }
 
 // Command returns the message type of the getdata message.

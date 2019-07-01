@@ -34,8 +34,8 @@ func (msg *MsgGetHeaders) Serialize(w io.Writer, pver uint32) error {
 		return err
 	}
 
-	for _, v := range msg.HeaderHashes {
-		err = writeElement(w, v)
+	for _, hash := range msg.HeaderHashes {
+		err = writeElement(w, hash)
 		if err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func (msg *MsgGetHeaders) Deserialize(r io.Reader, pver uint32) error {
 		if err != nil {
 			return err
 		}
-		msg.HeaderHashes = append(msg.HeaderHashes, hash)
+		msg.HeaderHashes = append(msg.HeaderHashes, &hash)
 	}
 
 	return readElement(r, msg.StopHash)
@@ -72,7 +72,7 @@ func (msg *MsgGetHeaders) Deserialize(r io.Reader, pver uint32) error {
 // HashCount returns the number of block header hashes in the getheaders
 // message.
 func (msg *MsgGetHeaders) HashCount() uint64 {
-	return len(msg.HeaderHashes)
+	return uint64(len(msg.HeaderHashes))
 }
 
 // Command returns the message type of the getheaders message.

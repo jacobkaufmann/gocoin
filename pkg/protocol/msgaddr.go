@@ -21,8 +21,8 @@ func (msg *MsgAddr) Serialize(w io.Writer, pver uint32) error {
 		return err
 	}
 
-	for _, v := range msg.Addrs {
-		err = writeNetAddress(w, pver, *v, true)
+	for _, addr := range msg.Addrs {
+		err = writeNetAddress(w, pver, *addr, true)
 		if err != nil {
 			return err
 		}

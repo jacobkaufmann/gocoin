@@ -20,10 +20,10 @@ const NetAddressSize = 30
 
 // writeNetAddress encodes addr and writes the value to w.
 func writeNetAddress(w io.Writer, pver uint32, addr NetAddress,
-	time bool) error {
+	includeTime bool) error {
 	var err error
 
-	if time {
+	if includeTime {
 		timestamp := uint32Time(addr.Timestamp)
 		err = writeElement(w, timestamp)
 		if err != nil {
@@ -36,16 +36,16 @@ func writeNetAddress(w io.Writer, pver uint32, addr NetAddress,
 
 // readNetAddress reads from r and decodes the value into addr.
 func readNetAddress(r io.Reader, pver uint32, addr *NetAddress,
-	time bool) error {
+	includeTime bool) error {
 	var err error
 
-	if time {
+	if includeTime {
 		var timestamp uint32Time
 		err = readElements(r, &timestamp)
 		if err != nil {
 			return err
 		}
-		*addr.Timestamp = timestamp
+		addr.Timestamp = time.Time(timestamp)
 	}
 
 	var ip [net.IPv6len]byte
@@ -54,6 +54,6 @@ func readNetAddress(r io.Reader, pver uint32, addr *NetAddress,
 		return err
 	}
 
-	*addr.IP = ip[:]
+	addr.IP = ip[:]
 	return nil
 }
