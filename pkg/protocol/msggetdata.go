@@ -64,7 +64,7 @@ func (msg *MsgGetData) Command() MsgType {
 	return MsgTypePing
 }
 
-// MaxPayloadLength returns the maximum length in bytes of the getdata message.
-func (msg *MsgGetData) MaxPayloadLength(pver uint32) uint32 {
+// MaxPayloadSize returns the maximum size in bytes of the getdata message.
+func (msg *MsgGetData) MaxPayloadSize(pver uint32) uint32 {
 	return MaxInvSize*InvVectSize + 9
 }

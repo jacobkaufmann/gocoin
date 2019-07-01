@@ -289,7 +289,6 @@ func readElements(r io.Reader, elements ...interface{}) error {
 }
 
 func writeElement(w io.Writer, element interface{}) error {
-	var err error
 	switch e := element.(type) {
 	case bool:
 		var err error
@@ -391,6 +390,7 @@ func writeElements(w io.Writer, elements ...interface{}) error {
 	return nil
 }
 
+// reverseBytes reverses the elements of a byte slice.
 func reverseBytes(b []byte) {
 	for i, j := 0, len(b)-1; i < j; i, j = i+1, j-1 {
 		b[i], b[j] = b[j], b[i]
