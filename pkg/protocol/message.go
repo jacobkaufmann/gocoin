@@ -1,8 +1,12 @@
 package protocol
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"errors"
 	"io"
+
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 )
 
 const (
@@ -68,6 +72,16 @@ func (msgType MsgType) String() string {
 	return string(msgType)
 }
 
+var (
+	// ErrMsgTypeInvalid is returned when a message header contains an invalid
+	// message type (command).
+	ErrMsgTypeInvalid = errors.New("invalid message type")
+
+	// ErrInsufficientBytesWritten is returned when the number of bytes
+	// written to a writer is insufficient for a particular type.
+	ErrInsufficientBytesWritten = errors.New("insufficient bytes written")
+)
+
 // Bytes returns the message type encoded into a byte array.
 func (msgType MsgType) Bytes() [CommandSize]byte {
 	var b [CommandSize]byte
@@ -110,6 +124,22 @@ type messageHeader struct {
 	checksum [ChecksumSize]byte
 }
 
+// writeMessageHeader writes to w and returns the number of bytes written.
+func writeMessageHeader(w io.Writer, hdr *messageHeader) (int, error) {
+	b := make([]byte, MessageHeaderSize)
+
+	cmd := hdr.command.Bytes()
+	check := hdr.checksum
+	reverseBytes(check[:])
+
+	littleEndian.PutUint32(b[:MagicSize], uint32(hdr.magic))
+	copy(b[MagicSize:MessageSizeOffset], cmd[:])
+	littleEndian.PutUint32(b[MessageSizeOffset:ChecksumOffset], hdr.size)
+	copy(b[ChecksumOffset:], check[:])
+
+	return w.Write(b)
+}
+
 // readMessageHeader reads from r and returns a message header.
 func readMessageHeader(r io.Reader) (*messageHeader, error) {
 	buf := make([]byte, MessageHeaderSize)
@@ -147,12 +177,89 @@ func checksum(b []byte) (check [ChecksumSize]byte) {
 
 // WriteMessage writes a Message to a writer and returns the number of bytes
 // written.
-// func WriteMessage(w io.Writer, msg Message, pver uint32, net BitcoinNet) (int, error) {
-//
-// }
+func WriteMessage(w io.Writer, msg Message, pver uint32, net BitcoinNet) (int, error) {
+	var buf bytes.Buffer
+	err := msg.Serialize(&buf, pver)
+	if err != nil {
+		return 0, err
+	}
+
+	check := hashing.DoubleSHA256B(buf.Bytes())[:ChecksumSize]
+	hdr := &messageHeader{
+		magic:   net,
+		command: msg.Command(),
+		size:    0,
+	}
+	copy(hdr.checksum[:], check[:])
+
+	hdrBytes, err := writeMessageHeader(w, hdr)
+	if err != nil {
+		return hdrBytes, err
+	}
+	msgBytes, err := buf.WriteTo(w)
+
+	return hdrBytes + int(msgBytes), err
+}
 
 // ReadMessage reads and validates bytes from a reader and assembles a Message
 // from those bytes.
-// func ReadMessage(r io.Reader, pver uint32, net BitcoinNet) (Message, error) {
-//
-// }
+func ReadMessage(r io.Reader, pver uint32, net BitcoinNet) (Message, error) {
+	hdr, err := readMessageHeader(r)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err := makeEmptyMessage(hdr.command)
+	if err != nil {
+		return nil, err
+	}
+
+	err = msg.Deserialize(r, pver)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// makeEmptyMessage returns a new empty message corresponding to type t.
+func makeEmptyMessage(t MsgType) (Message, error) {
+	var msg Message
+	switch t {
+	case MsgTypeVersion:
+		msg = &MsgVersion{}
+	case MsgTypeVerAck:
+		msg = &MsgVerAck{}
+	case MsgTypeAddr:
+		msg = &MsgAddr{}
+	case MsgTypeInv:
+		msg = &MsgInv{}
+	case MsgTypeGetData:
+		msg = &MsgGetData{}
+	case MsgTypeGetBlocks:
+		msg = &MsgGetBlocks{}
+	case MsgTypeGetHeaders:
+		msg = &MsgGetHeaders{}
+	case MsgTypeTx:
+		msg = &MsgTx{}
+	case MsgTypeBlock:
+		msg = &MsgBlock{}
+	case MsgTypeHeaders:
+		msg = &MsgHeaders{}
+	case MsgTypeGetAddr:
+		msg = &MsgGetAddr{}
+	case MsgTypeMempool:
+		msg = &MsgMempool{}
+	case MsgTypePing:
+		msg = &MsgPing{}
+	case MsgTypePong:
+		msg = &MsgPong{}
+	case MsgTypeReject:
+		msg = &MsgReject{}
+	case MsgTypeSendHeaders:
+		msg = &MsgSendHeaders{}
+	default:
+		return nil, ErrMsgTypeInvalid
+	}
+	return msg, nil
+}
