@@ -26,7 +26,7 @@ func NewTxFromMessage(msg *protocol.MsgTx) *Tx {
 	return &Tx{MsgTx: msg}
 }
 
-// Message returns
+// Message returns the underlying transaction message of the transaction.
 func (tx *Tx) Message() *protocol.MsgTx {
 	return tx.MsgTx
 }
