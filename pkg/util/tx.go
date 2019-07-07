@@ -1,6 +1,9 @@
 package util
 
 import (
+	"bytes"
+
+	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
 	"github.com/jacobkaufmann/gocoin/pkg/protocol"
 )
 
@@ -29,4 +32,36 @@ func NewTxFromMessage(msg *protocol.MsgTx) *Tx {
 // Message returns the underlying transaction message of the transaction.
 func (tx *Tx) Message() *protocol.MsgTx {
 	return tx.MsgTx
+}
+
+// TxID returns the transaction id (double-SHA256 hash) of tx.
+func (tx *Tx) TxID(pver uint32) (*hashing.Hash, error) {
+	var buf bytes.Buffer
+	err := tx.MsgTx.Serialize(&buf, pver)
+	if err != nil {
+		return nil, err
+	}
+
+	txID := hashing.DoubleSHA256H(buf.Bytes())
+	return &txID, nil
+}
+
+// AddInput adds a transaction input to the transaction.
+func (tx *Tx) AddInput(in *protocol.TxIn) {
+	tx.Inputs = append(tx.Inputs, in)
+}
+
+// ClearInputs removes all transaction inputs from the transaction.
+func (tx *Tx) ClearInputs() {
+	tx.Inputs = nil
+}
+
+// AddOutput adds a transaction output to the transaction.
+func (tx *Tx) AddOutput(out *protocol.TxOut) {
+	tx.Outputs = append(tx.Outputs, out)
+}
+
+// ClearOutputs removes all transaction outputs from the transaction.
+func (tx *Tx) ClearOutputs() {
+	tx.Outputs = nil
 }
