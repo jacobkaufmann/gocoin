@@ -4,14 +4,23 @@ import (
 	"math"
 
 	"github.com/jacobkaufmann/gocoin/pkg/crypto/hashing"
-	"github.com/jacobkaufmann/gocoin/pkg/primitives"
 )
 
-// MerkleTree represents a Merkle Tree.  The Merkle Tree may be partial
+// MerkleTree represents a Merkle Tree. The Merkle Tree may be partial
 // or whole.
 type MerkleTree struct {
-	Nodes           []*hashing.Hash
-	NumTransactions uint32
+	nodes      []*hashing.Hash
+	numEntries uint32
+}
+
+// Root returns the root of the merkle tree.
+func (m *MerkleTree) Root() *hashing.Hash {
+	return m.nodes[len(m.nodes)-1]
+}
+
+// NumEntries returns the number of entries in the merkle tree.
+func (m *MerkleTree) NumEntries() uint32 {
+	return m.numEntries
 }
 
 // hashMerkleNodes takes two hashes, treated as left and right tree nodes, and
@@ -39,26 +48,20 @@ func nextPowerOfTwo(n int) int {
 	return 1 << exponent // 2^exponent
 }
 
-// BuildMerkleTree takes a slice of transaction IDs and returns the MerkleTree built
-// from the bottom up.
-func BuildMerkleTree(transactions []primitives.Transaction) *MerkleTree {
-	nextPoT := nextPowerOfTwo(len(transactions))
+// BuildMerkleTree returns a Merkle Tree built bottom up from a slice of
+// hashes.
+func BuildMerkleTree(hashes []*hashing.Hash) *MerkleTree {
+	nextPoT := nextPowerOfTwo(len(hashes))
 	arraySize := nextPoT*2 - 1
 	nodes := make([]*hashing.Hash, arraySize)
 
 	// Create the intial bottom layer of hashes and insert into array.
-	for i, tx := range transactions {
-		// Coinbase transaction
-		if i == 0 {
-			var coinbaseHash hashing.Hash
-			nodes[i] = &coinbaseHash
-		} else {
-			nodes[i] = &tx.Metadata.TxID
-		}
+	for i, h := range hashes {
+		nodes[i] = h
 	}
 
-	// Start the array offset after the last transaction and adjusted to the
-	// next power of two.
+	// Start the array offset after the last bottom-layer hash and adjusted to
+	// the next power of two.
 	offset := nextPoT
 	for i := 0; i < arraySize-1; i += 2 {
 		switch {
@@ -81,8 +84,8 @@ func BuildMerkleTree(transactions []primitives.Transaction) *MerkleTree {
 		offset++
 	}
 
-	t := &MerkleTree{}
-	t.Nodes = nodes
-	t.NumTransactions = uint32(len(transactions))
-	return t
+	return &MerkleTree{
+		nodes:      nodes,
+		numEntries: uint32(len(hashes)),
+	}
 }
