@@ -7,6 +7,11 @@ type Stack struct {
 	items [][]byte
 }
 
+// NewStack returns an empty stack.
+func NewStack() *Stack {
+	return &Stack{}
+}
+
 // Push pushes data onto the top of the Stack.
 func (s Stack) Push(d []byte) {
 	s.items = append(s.items, d)
