@@ -24,8 +24,8 @@ func NewTx(version int32, inputs []*protocol.TxIn, outputs []*protocol.TxOut, lo
 	return &Tx{msgTx}
 }
 
-// NewTxFromMessage returns an initialized transaction from a transaction message.
-func NewTxFromMessage(msg *protocol.MsgTx) *Tx {
+// NewTxFromMsg returns an initialized transaction from a transaction message.
+func NewTxFromMsg(msg *protocol.MsgTx) *Tx {
 	return &Tx{MsgTx: msg}
 }
 
