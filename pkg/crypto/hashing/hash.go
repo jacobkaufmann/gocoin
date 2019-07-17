@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// HashSize of array used to store hashes.  See Hash.
+// HashSize of array used to store hashes.
 const HashSize = 32
 
 // Hash is used in several of the bitcoin messages and common structures.  It
