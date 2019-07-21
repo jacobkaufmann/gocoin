@@ -38,6 +38,9 @@ type Peer struct {
 	// Version is the protocol version of the peer.
 	Version uint32
 
+	// Net is the network of the peer.
+	Net protocol.BitcoinNet
+
 	// Inbound is a flag denoting whether the peer is an inbound connection.
 	Inbound bool
 
@@ -59,14 +62,14 @@ func NewPeer(conn *net.TCPConn, inbound bool) *Peer {
 	}
 }
 
-// EnqueueSendMsg enqueues a message to the peer's send message buffer.
-func (p *Peer) EnqueueSendMsg(msg protocol.Message) {
+// EnqueueSendMessage enqueues a message to the peer's send message buffer.
+func (p *Peer) EnqueueSendMessage(msg protocol.Message) {
 	p.sendMsgBuf <- msg
 }
 
-// DequeueSendMsg attempts to dequeue a message from the peer's send message
+// DequeueSendMessage attempts to dequeue a message from the peer's send message
 // buffer.
-func (p *Peer) DequeueSendMsg() protocol.Message {
+func (p *Peer) DequeueSendMessage() protocol.Message {
 	select {
 	case msg := <-p.sendMsgBuf:
 		return msg
@@ -76,14 +79,14 @@ func (p *Peer) DequeueSendMsg() protocol.Message {
 	}
 }
 
-// EnqueueReceiveMsg enqueues a message to the peer's receive message buffer.
-func (p *Peer) EnqueueReceiveMsg(msg protocol.Message) {
+// EnqueueReceiveMessage enqueues a message to the peer's receive message buffer.
+func (p *Peer) EnqueueReceiveMessage(msg protocol.Message) {
 	p.recvMsgBuf <- msg
 }
 
-// DequeueReceiveMsg attempts to receive a message from the peer's receive
+// DequeueReceiveMessage attempts to receive a message from the peer's receive
 // message buffer.
-func (p *Peer) DequeueReceiveMsg() protocol.Message {
+func (p *Peer) DequeueReceiveMessage() protocol.Message {
 	select {
 	case msg := <-p.recvMsgBuf:
 		return msg
@@ -93,7 +96,7 @@ func (p *Peer) DequeueReceiveMsg() protocol.Message {
 	}
 }
 
-// SendMsg sends a message to p over its TCP connection.
-func SendMsg(msg protocol.Message, p *Peer) error {
-	return msg.Serialize(p.Conn, p.Version)
+// SendMessage sends a message to p over its TCP connection.
+func SendMessage(msg protocol.Message, p *Peer) (int, error) {
+	return protocol.WriteMessage(p.Conn, msg, p.Version, p.Net)
 }
