@@ -48,7 +48,10 @@ type ConnManager struct {
 // NewConnManager creates a new connection manager.
 func NewConnManager() *ConnManager {
 	return &ConnManager{
-		Conns: make(map[string]*Peer),
+		Conns:       make(map[string]*Peer),
+		NumOutbound: 0,
+		NumInbound:  0,
+		Services:    0,
 	}
 }
 
