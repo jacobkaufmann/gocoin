@@ -28,7 +28,7 @@ type Peer struct {
 	bufRecvMsg chan protocol.Message
 }
 
-// NewPeer returns a new peer ready to listen at ip:port.
+// NewPeer returns a new peer.
 func NewPeer(conn *net.TCPConn, inbound bool) *Peer {
 	return &Peer{
 		Conn:       conn,
