@@ -3,6 +3,7 @@ package p2p
 import (
 	"log"
 	"net"
+	"time"
 
 	"github.com/jacobkaufmann/gocoin/pkg/protocol"
 )
@@ -20,12 +21,23 @@ const (
 
 // Peer represents a node on the Bitcoin network.
 type Peer struct {
-	Conn       *net.TCPConn
-	Services   protocol.ServiceFlag
-	Version    uint32
-	Inbound    bool
-	bufSendMsg chan protocol.Message
-	bufRecvMsg chan protocol.Message
+	// Conn is the TCP connection to the peer.
+	Conn *net.TCPConn
+
+	// Services is the service flag of the peer.
+	Services protocol.ServiceFlag
+
+	// Version is the protocol version of the peer.
+	Version uint32
+
+	// Inbound is a flag denoting whether the peer is an inbound connection.
+	Inbound bool
+
+	// TimeConnected is the time the connection to the peer was established.
+	TimeConnected time.Time
+
+	sendMsgBuf chan protocol.Message
+	recvMsgBuf chan protocol.Message
 }
 
 // NewPeer returns a new peer.
@@ -34,8 +46,8 @@ func NewPeer(conn *net.TCPConn, inbound bool) *Peer {
 		Conn:       conn,
 		Services:   0,
 		Inbound:    inbound,
-		bufSendMsg: make(chan protocol.Message),
-		bufRecvMsg: make(chan protocol.Message),
+		sendMsgBuf: make(chan protocol.Message),
+		recvMsgBuf: make(chan protocol.Message),
 	}
 }
 
@@ -46,14 +58,14 @@ func (p *Peer) SendMsg(msg protocol.Message) error {
 
 // EnqueueSendMsg enqueues a message to the peer's send message buffer.
 func (p *Peer) EnqueueSendMsg(msg protocol.Message) {
-	p.bufSendMsg <- msg
+	p.sendMsgBuf <- msg
 }
 
 // DequeueSendMsg attempts to dequeue a message from the peer's send message
 // buffer.
 func (p *Peer) DequeueSendMsg() protocol.Message {
 	select {
-	case msg := <-p.bufSendMsg:
+	case msg := <-p.sendMsgBuf:
 		return msg
 	default:
 		log.Println("no messages available to send.")
@@ -63,14 +75,14 @@ func (p *Peer) DequeueSendMsg() protocol.Message {
 
 // EnqueueRecvMsg enqueues a message to the peer's receive message buffer.
 func (p *Peer) EnqueueRecvMsg(msg protocol.Message) {
-	p.bufRecvMsg <- msg
+	p.recvMsgBuf <- msg
 }
 
 // DequeueRecvMsg attempts to receive a message from the peer's receive
 // message buffer.
 func (p *Peer) DequeueRecvMsg() protocol.Message {
 	select {
-	case msg := <-p.bufRecvMsg:
+	case msg := <-p.recvMsgBuf:
 		return msg
 	default:
 		log.Println("no messages available to recieve.")
