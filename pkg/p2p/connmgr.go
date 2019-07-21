@@ -29,10 +29,20 @@ const (
 
 // ConnManager manages the connections of a Bitcoin node.
 type ConnManager struct {
-	Conns       map[string]*Peer
-	muxConns    sync.RWMutex
+	// Conns is the connection pool being managed. The connnection pool is
+	// protected by a read-write mutex and is thread-safe.
+	Conns    map[string]*Peer
+	muxConns sync.RWMutex
+
+	// NumOutbound is the number of outbound connections in the connection
+	// pool.
 	NumOutbound int
-	NumInbound  int
+
+	// NumInbound is the number of inbound connections in the connection pool.
+	NumInbound int
+
+	// Services is the service flag of the local node.
+	Services protocol.ServiceFlag
 }
 
 // NewConnManager creates a new connection manager.
