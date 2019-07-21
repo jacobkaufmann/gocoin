@@ -17,6 +17,14 @@ const (
 
 	// TestnetPort is the default port for the test Bitcoin network.
 	TestnetPort = 18333
+
+	// MaxSendBufferSize is the maximum number of messages to hold in a peer's
+	// send message buffer.
+	MaxSendBufferSize = 1000
+
+	// MaxReceiveBufferSize is the maximum number of messages to hold in a peer's
+	// receive message buffer.
+	MaxReceiveBufferSize = 5000
 )
 
 // Peer represents a node on the Bitcoin network.
@@ -46,14 +54,9 @@ func NewPeer(conn *net.TCPConn, inbound bool) *Peer {
 		Conn:       conn,
 		Services:   0,
 		Inbound:    inbound,
-		sendMsgBuf: make(chan protocol.Message),
-		recvMsgBuf: make(chan protocol.Message),
+		sendMsgBuf: make(chan protocol.Message, MaxSendBufferSize),
+		recvMsgBuf: make(chan protocol.Message, MaxReceiveBufferSize),
 	}
-}
-
-// SendMsg sends a message to p over its TCP connection.
-func (p *Peer) SendMsg(msg protocol.Message) error {
-	return msg.Serialize(p.Conn, p.Version)
 }
 
 // EnqueueSendMsg enqueues a message to the peer's send message buffer.
@@ -73,14 +76,14 @@ func (p *Peer) DequeueSendMsg() protocol.Message {
 	}
 }
 
-// EnqueueRecvMsg enqueues a message to the peer's receive message buffer.
-func (p *Peer) EnqueueRecvMsg(msg protocol.Message) {
+// EnqueueReceiveMsg enqueues a message to the peer's receive message buffer.
+func (p *Peer) EnqueueReceiveMsg(msg protocol.Message) {
 	p.recvMsgBuf <- msg
 }
 
-// DequeueRecvMsg attempts to receive a message from the peer's receive
+// DequeueReceiveMsg attempts to receive a message from the peer's receive
 // message buffer.
-func (p *Peer) DequeueRecvMsg() protocol.Message {
+func (p *Peer) DequeueReceiveMsg() protocol.Message {
 	select {
 	case msg := <-p.recvMsgBuf:
 		return msg
@@ -88,4 +91,9 @@ func (p *Peer) DequeueRecvMsg() protocol.Message {
 		log.Println("no messages available to recieve.")
 		return nil
 	}
+}
+
+// SendMsg sends a message to p over its TCP connection.
+func SendMsg(msg protocol.Message, p *Peer) error {
+	return msg.Serialize(p.Conn, p.Version)
 }
