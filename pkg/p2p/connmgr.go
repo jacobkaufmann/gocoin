@@ -120,6 +120,13 @@ func (mgr *ConnManager) AddConn(p *Peer) (added bool) {
 	return added
 }
 
+// ClearConns removes all peer connections from mgr's connection pool.
+func (mgr *ConnManager) ClearConns() {
+	mgr.muxConns.Lock()
+	defer mgr.muxConns.Unlock()
+	mgr.Conns = make(map[string]*Peer)
+}
+
 // SetServices sets the service flags for the peer at addr to svc.
 func (mgr *ConnManager) SetServices(addr string, svc protocol.ServiceFlag) {
 	p := mgr.GetConn(addr)
