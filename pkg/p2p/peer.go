@@ -100,3 +100,18 @@ func (p *Peer) DequeueReceiveMessage() protocol.Message {
 func SendMessage(msg protocol.Message, p *Peer) (int, error) {
 	return protocol.WriteMessage(p.Conn, msg, p.Version, p.Net)
 }
+
+// SendMessages sends all available messages to be sent to p.
+func SendMessages(p *Peer) (int, error) {
+	totalBytes := 0
+
+	for msg := p.DequeueSendMessage(); msg != nil; {
+		n, err := SendMessage(msg, p)
+		totalBytes += n
+		if err != nil {
+			return totalBytes, err
+		}
+	}
+
+	return totalBytes, nil
+}
