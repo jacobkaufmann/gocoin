@@ -2,7 +2,9 @@ package p2p
 
 import (
 	"log"
+	"net"
 	"sync"
+	"time"
 
 	"github.com/jacobkaufmann/gocoin/pkg/protocol"
 )
@@ -26,6 +28,12 @@ const (
 	// connect to a peer.
 	MaxRetries = 3
 )
+
+// ConnInfo holds statistics about a connection to a peer.
+type ConnInfo struct {
+	Source             *net.TCPAddr
+	LastSuccessfulConn time.Time
+}
 
 // ConnManager manages the connections of a Bitcoin node.
 type ConnManager struct {
