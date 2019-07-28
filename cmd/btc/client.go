@@ -59,12 +59,18 @@ func (c *Client) Listen() {
 		}
 
 		// Handle the connection.
-		peer := p2p.NewPeer(conn, true)
-		added := c.ConnManager.AddConn(peer)
-		if added {
-			log.Printf("connection established with %v at time: %v",
-				peer.Conn.RemoteAddr(), peer.TimeConnected.UTC())
-		}
+		go c.handleConn(conn)
+	}
+}
+
+// handleConn establishes a connection with a new peer at conn and adds the
+// peer in the client's connection manager.
+func (c *Client) handleConn(conn *net.TCPConn) {
+	peer := p2p.NewPeer(conn, true)
+	added := c.ConnManager.AddConn(peer)
+	if added {
+		log.Printf("connection established with %v at time: %v",
+			peer.Conn.RemoteAddr(), peer.TimeConnected.UTC())
 	}
 }
 
