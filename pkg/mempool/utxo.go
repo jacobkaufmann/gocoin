@@ -1,7 +1,12 @@
 package mempool
 
-// A UTxO represents an unspent transaction output.  Unspent transaction
+import (
+	"github.com/jacobkaufmann/gocoin/pkg/protocol"
+)
+
+// A UTXO represents an unspent transaction output.  Unspent transaction
 // outputs are the outputs of previous transactions which are eligible to
 // be consumed by future transactions.
-type UTxO struct {
+type UTXO struct {
+	*protocol.TxOut
 }

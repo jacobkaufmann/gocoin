@@ -56,10 +56,7 @@ type ConnManager struct {
 // NewConnManager creates a new connection manager.
 func NewConnManager() *ConnManager {
 	return &ConnManager{
-		Conns:       make(map[string]*Peer),
-		NumOutbound: 0,
-		NumInbound:  0,
-		Services:    0,
+		Conns: make(map[string]*Peer),
 	}
 }
 
@@ -105,6 +102,7 @@ func (mgr *ConnManager) RemoveConn(addr string) (removed bool) {
 func (mgr *ConnManager) AddConn(p *Peer) (added bool) {
 	mgr.muxConns.Lock()
 	defer mgr.muxConns.Unlock()
+
 	addr := p.Conn.RemoteAddr().String()
 
 	if p.Inbound {
