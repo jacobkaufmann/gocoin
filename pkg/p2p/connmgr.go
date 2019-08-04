@@ -70,9 +70,9 @@ func (mgr *ConnManager) NumConns() int {
 func (mgr *ConnManager) GetConn(addr string) *Peer {
 	mgr.muxConns.RLock()
 	defer mgr.muxConns.RUnlock()
-	p, ok := mgr.Conns[addr]
+	peer, ok := mgr.Conns[addr]
 	if ok {
-		return p
+		return peer
 	}
 	return nil
 }
@@ -83,12 +83,12 @@ func (mgr *ConnManager) RemoveConn(addr string) (removed bool) {
 	mgr.muxConns.Lock()
 	defer mgr.muxConns.Unlock()
 
-	p, ok := mgr.Conns[addr]
+	peer, ok := mgr.Conns[addr]
 	if !ok {
 		return false
 	}
 
-	if p.Inbound {
+	if peer.Inbound {
 		mgr.NumInbound--
 	} else {
 		mgr.NumOutbound--
@@ -98,16 +98,16 @@ func (mgr *ConnManager) RemoveConn(addr string) (removed bool) {
 	return true
 }
 
-// AddConn attempts to add a connection with p to mgr's connection pool.
-func (mgr *ConnManager) AddConn(p *Peer) (added bool) {
+// AddConn attempts to add a connection with peer to mgr's connection pool.
+func (mgr *ConnManager) AddConn(peer *Peer) (added bool) {
 	mgr.muxConns.Lock()
 	defer mgr.muxConns.Unlock()
 
-	addr := p.Conn.RemoteAddr().String()
+	addr := peer.Conn.RemoteAddr().String()
 
-	if p.Inbound {
+	if peer.Inbound {
 		if mgr.NumInbound < MaxInboundConns {
-			mgr.Conns[addr] = p
+			mgr.Conns[addr] = peer
 			mgr.NumInbound++
 			added = true
 		} else {
@@ -115,7 +115,7 @@ func (mgr *ConnManager) AddConn(p *Peer) (added bool) {
 		}
 	} else {
 		if mgr.NumOutbound < MaxOutboundConns {
-			mgr.Conns[addr] = p
+			mgr.Conns[addr] = peer
 			mgr.NumOutbound++
 			added = true
 		} else {
@@ -135,8 +135,8 @@ func (mgr *ConnManager) ClearConns() {
 
 // SetServices sets the service flags for the peer at addr to svc.
 func (mgr *ConnManager) SetServices(addr string, svc protocol.ServiceFlag) {
-	p := mgr.GetConn(addr)
-	if p != nil {
-		p.Services = svc
+	peer := mgr.GetConn(addr)
+	if peer != nil {
+		peer.Services = svc
 	}
 }
