@@ -63,15 +63,15 @@ func NewPeer(conn *net.TCPConn, inbound bool) *Peer {
 }
 
 // EnqueueSendMessage enqueues a message to the peer's send message buffer.
-func (p *Peer) EnqueueSendMessage(msg protocol.Message) {
-	p.sendMsgBuf <- msg
+func (peer *Peer) EnqueueSendMessage(msg protocol.Message) {
+	peer.sendMsgBuf <- msg
 }
 
 // DequeueSendMessage attempts to dequeue a message from the peer's send message
 // buffer.
-func (p *Peer) DequeueSendMessage() protocol.Message {
+func (peer *Peer) DequeueSendMessage() protocol.Message {
 	select {
-	case msg := <-p.sendMsgBuf:
+	case msg := <-peer.sendMsgBuf:
 		return msg
 	default:
 		log.Println("no messages available to send.")
@@ -80,15 +80,15 @@ func (p *Peer) DequeueSendMessage() protocol.Message {
 }
 
 // EnqueueReceiveMessage enqueues a message to the peer's receive message buffer.
-func (p *Peer) EnqueueReceiveMessage(msg protocol.Message) {
-	p.recvMsgBuf <- msg
+func (peer *Peer) EnqueueReceiveMessage(msg protocol.Message) {
+	peer.recvMsgBuf <- msg
 }
 
 // DequeueReceiveMessage attempts to receive a message from the peer's receive
 // message buffer.
-func (p *Peer) DequeueReceiveMessage() protocol.Message {
+func (peer *Peer) DequeueReceiveMessage() protocol.Message {
 	select {
-	case msg := <-p.recvMsgBuf:
+	case msg := <-peer.recvMsgBuf:
 		return msg
 	default:
 		log.Println("no messages available to recieve.")
@@ -97,16 +97,16 @@ func (p *Peer) DequeueReceiveMessage() protocol.Message {
 }
 
 // SendMessage sends a message to p over its TCP connection.
-func SendMessage(msg protocol.Message, p *Peer) (int, error) {
-	return protocol.WriteMessage(p.Conn, msg, p.Version, p.Net)
+func SendMessage(msg protocol.Message, peer *Peer) (int, error) {
+	return protocol.WriteMessage(peer.Conn, msg, peer.Version, peer.Net)
 }
 
 // SendMessages sends all available messages to be sent to p.
-func SendMessages(p *Peer) (int, error) {
+func SendMessages(peer *Peer) (int, error) {
 	totalBytes := 0
 
-	for msg := p.DequeueSendMessage(); msg != nil; {
-		n, err := SendMessage(msg, p)
+	for msg := peer.DequeueSendMessage(); msg != nil; {
+		n, err := SendMessage(msg, peer)
 		totalBytes += n
 		if err != nil {
 			return totalBytes, err
